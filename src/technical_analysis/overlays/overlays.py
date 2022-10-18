@@ -3,6 +3,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
+from technical_analysis.indicators import atr
 from technical_analysis.overlays.moving_average import ema
 
 
@@ -64,8 +65,3 @@ def kbands(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) 
     lower_keltner = ema_ - factor
     upper_keltner = ema_ + factor
     return lower_keltner, upper_keltner
-
-
-
-
-
