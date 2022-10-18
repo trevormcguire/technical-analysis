@@ -8,6 +8,7 @@ Single Candlestick Patterns
 import pandas as pd
 import numpy as np
 
+from technical_analysis.utils import get_body
 
 def positive_close(open: pd.Series, close: pd.Series) -> pd.Series:
     return close > open
@@ -63,7 +64,8 @@ def is_long_body(open: pd.Series,
     high_low_range = np.abs(high - low)
     close_open_range = np.abs(close - open) 
     has_large_body = close_open_range > high_low_range - (high_low_range*min_body_size)
-
+    if not lookback:
+        return has_large_body
     shifted_series = [close_open_range.shift(n) for n in range(1, lookback+1)]
     shifted_series = np.max(pd.concat(shifted_series, axis=1), axis=1)  # max open-close range of all lookback periods
     is_relatively_large = close_open_range > (shifted_series * min_relative_size)
@@ -201,8 +203,8 @@ def body_outside_shadow(open: pd.Series,
     shifted_low = low.shift(lookback)
     shifted_low = shifted_low - (shifted_low*threshold)
 
-    upper_body = pd.concat([open, close], axis=1).max(axis=1)
-    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+    lower_body, upper_body = get_body(open, close)
+
     return (upper_body > shifted_high) & (lower_body < shifted_low)
 
 
@@ -213,8 +215,7 @@ def body_outside_body(open: pd.Series,
     """
     Current body is outside previous bdoy
     """
-    upper_body = pd.concat([open, close], axis=1).max(axis=1)
-    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+    lower_body, upper_body = get_body(open, close)
 
     shifted_upper_body = upper_body.shift(lookback)
     shifted_upper_body = shifted_upper_body + (shifted_upper_body*threshold)
@@ -249,9 +250,8 @@ def shadow_inside_body(open: pd.Series,
     """
     Current shadow is inside previous body
     """
-    prev_upper_body = pd.concat([open, close], axis=1).max(axis=1)
+    prev_lower_body, prev_upper_body = get_body(open, close)
     prev_upper_body = prev_upper_body - (prev_upper_body * threshold)
-    prev_lower_body = pd.concat([open, close], axis=1).min(axis=1)
     prev_lower_body = prev_lower_body + (prev_lower_body * threshold)
     return (high < prev_upper_body.shift(lookback)) & (low > prev_lower_body.shift(lookback))
 
@@ -263,8 +263,7 @@ def body_inside_body(open: pd.Series,
     """
     Current body is inside previous body
     """
-    upper_body = pd.concat([open, close], axis=1).max(axis=1)
-    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+    lower_body, upper_body = get_body(open, close)
 
     shifted_upper_body = upper_body.shift(lookback)
     shifted_upper_body = shifted_upper_body - (shifted_upper_body*threshold)
@@ -282,8 +281,7 @@ def body_inside_shadow(open: pd.Series,
     """
     Current body is inside previous shadow
     """
-    upper_body = pd.concat([open, close], axis=1).max(axis=1)
-    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+    lower_body, upper_body = get_body(open, close)
 
     high = high.shift(lookback)
     high = high - (high * threshold)
@@ -291,3 +289,16 @@ def body_inside_shadow(open: pd.Series,
     low = low + (low * threshold)
 
     return (upper_body < high) & (lower_body > low)
+
+
+def spinning_top(open: pd.Series,
+                 high: pd.Series,
+                 low: pd.Series,
+                 close: pd.Series) -> pd.Series:
+    """
+    A spinning top has upper and lower shadows larger than the body
+    Signals indecision
+    """
+    lower_body, upper_body = get_body(open, close)
+    body_width = upper_body - lower_body
+    return ((high - upper_body) > body_width) & ((lower_body - low) > body_width)

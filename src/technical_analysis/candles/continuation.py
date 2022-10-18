@@ -30,9 +30,9 @@ def rising_n(open: pd.Series,
     long_green = is_long_body(open, high, low, close) & positive_close(open, close)
     insides = []
     shifts = list(range(n, 0, -1))
-    for i in range(1, n+1):
-        n_shift = shifts[i-1]
-        insides.append(body_inside_shadow(open, high, low, close, lookback=i).shift(n_shift))
+    lookback_periods = list(range(1, n+1))
+    for shift, period in list(zip(shifts, lookback_periods)):
+        insides.append(body_inside_shadow(open, high, low, close, lookback=period).shift(shift))
     combined_insides = insides.pop(0)
     for series in insides:
         combined_insides = combined_insides & series
@@ -75,17 +75,17 @@ def falling_n(open: pd.Series,
         2. 'n' candles, each inside high-low range of (1)
         3. n+2 candle closes at a new low (determined by close < all closes 'lookback' periods ago)
     """
-    bullish_trend = is_bearish_trend(close, lookback=lookback)
-    long_green = is_long_body(open, high, low, close) & negative_close(open, close)
+    bearish_trend = is_bearish_trend(close, lookback=lookback)
+    long_red = is_long_body(open, high, low, close) & negative_close(open, close)
     insides = []
     shifts = list(range(n, 0, -1))
-    for i in range(1, n+1):
-        n_shift = shifts[i-1]
-        insides.append(body_inside_shadow(open, high, low, close, lookback=i).shift(n_shift))
+    lookback_periods = list(range(1, n+1))
+    for shift, period in list(zip(shifts, lookback_periods)):
+        insides.append(body_inside_shadow(open, high, low, close, lookback=period).shift(shift))
     combined_insides = insides.pop(0)
     for series in insides:
         combined_insides = combined_insides & series
-    return bullish_trend & long_green & combined_insides & is_new_low(close, lookback)
+    return bearish_trend & long_red & combined_insides & is_new_low(close, lookback)
 
 
 def falling_three(open: pd.Series,
@@ -178,3 +178,5 @@ def bullish_tasuki_gap(open: pd.Series,
     opened_in_prev_body = (open > open.shift(1)) & (open < close.shift(1))
     closed_inside_gap = (close < low.shift(1)) & (close > high.shift(2))
     return bullish_trend & bullish_long_body.shift(2) & bullish_gap.shift(1) & opened_in_prev_body & closed_inside_gap
+
+

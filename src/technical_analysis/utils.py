@@ -1,5 +1,17 @@
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
+
+
+def get_body(open: pd.Series, close: pd.Series) -> Tuple[pd.Series]:
+    """
+    gets upper and lower bounds of candle body, direction-agnostic
+    """
+    body = pd.concat([open, close], axis=1)
+    upper_body = body.max(axis=1)
+    lower_body = body.min(axis=1)
+    return lower_body, upper_body
 
 
 def slope(x):
