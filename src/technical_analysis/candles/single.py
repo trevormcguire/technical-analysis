@@ -175,6 +175,7 @@ def is_outside(high: pd.Series,
                threshold: float = 0.001) -> pd.Series:
     """
     Determines if a candle's shadow is larger than shadow of prior candle (outside)
+    Current shadow is outside previous shadow
     """
     if not threshold:
         return (high > high.shift(1)) & (low < low.shift(1))
@@ -185,13 +186,13 @@ def is_outside(high: pd.Series,
     return (high > shifted_high) & (low < shifted_low)
 
 
-def is_outside_body(open: pd.Series,
-                    high: pd.Series,
-                    low: pd.Series,
-                    close: pd.Series,
-                    threshold: float = 0.001) -> pd.Series:
+def body_outside_shadow(open: pd.Series,
+                        high: pd.Series,
+                        low: pd.Series,
+                        close: pd.Series,
+                        threshold: float = 0.001) -> pd.Series:
     """
-    Same as is_outside but compares current body to previous shadow
+    Current body is outside previous shadow
     """
     shifted_high = high.shift(1)
     shifted_high = shifted_high + (shifted_high*threshold)
@@ -203,11 +204,28 @@ def is_outside_body(open: pd.Series,
     return (upper_body > shifted_high) & (lower_body < shifted_low)
 
 
+def body_outside_body(open: pd.Series,
+                      close: pd.Series,
+                      threshold: float = 0.001) -> pd.Series:
+    """
+    Current body is outside previous bdoy
+    """
+    upper_body = pd.concat([open, close], axis=1).max(axis=1)
+    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+
+    shifted_upper_body = upper_body.shift(1)
+    shifted_upper_body = shifted_upper_body + (shifted_upper_body*threshold)
+    shifted_lower_body = lower_body.shift(1)
+    shifted_lower_body = shifted_lower_body - (shifted_lower_body*threshold)
+    return (upper_body > shifted_upper_body) & (lower_body < shifted_lower_body)
+
+
 def is_inside(high: pd.Series,
               low: pd.Series,
               threshold: float = 0.001) -> pd.Series:
     """
     Determines if a candle's shadow is smaller than shadow of prior candle (outside)
+    Current shadow is inside prior shadow
     """
     if not threshold:
         return (high < high.shift(1)) & (low > low.shift(1))
@@ -218,16 +236,32 @@ def is_inside(high: pd.Series,
     return (high < shifted_high) & (low > shifted_low)
 
 
-def is_inside_body(open: pd.Series,
-                   high: pd.Series,
-                   low: pd.Series,
-                   close: pd.Series,
-                   threshold: float = 0.001) -> pd.Series:
+def shadow_inside_body(open: pd.Series,
+                       high: pd.Series,
+                       low: pd.Series,
+                       close: pd.Series,
+                       threshold: float = 0.001) -> pd.Series:
     """
-    Same as is_inside but compares current shadow to previous body
+    Current shadow is inside previous body
     """
     prev_upper_body = pd.concat([open, close], axis=1).max(axis=1)
     prev_upper_body = prev_upper_body - (prev_upper_body * threshold)
     prev_lower_body = pd.concat([open, close], axis=1).min(axis=1)
     prev_lower_body = prev_lower_body + (prev_lower_body * threshold)
     return (high < prev_upper_body.shift(1)) & (low > prev_lower_body.shift(1))
+
+
+def body_inside_body(open: pd.Series,
+                     close: pd.Series,
+                     threshold: float = 0.001) -> pd.Series:
+    """
+    Current body is inside previous body
+    """
+    upper_body = pd.concat([open, close], axis=1).max(axis=1)
+    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+
+    shifted_upper_body = upper_body.shift(1)
+    shifted_upper_body = shifted_upper_body - (shifted_upper_body*threshold)
+    shifted_lower_body = lower_body.shift(1)
+    shifted_lower_body = shifted_lower_body + (shifted_lower_body*threshold)
+    return (upper_body < shifted_upper_body) & (lower_body > shifted_lower_body)

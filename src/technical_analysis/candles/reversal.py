@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from technical_analysis.utils import is_bullish_trend, is_bearish_trend
-from technical_analysis.candles.single import is_long_body, positive_close, is_short_body
+from technical_analysis.candles.single import is_long_body, negative_close, positive_close, body_outside_body
 
 
 def dark_cloud(open: pd.Series,
@@ -33,12 +33,11 @@ def dark_cloud(open: pd.Series,
 
 
 def bullish_engulfing(open: pd.Series,
-                     high: pd.Series,
-                     low: pd.Series,
-                     close: pd.Series,
-                     trend_lookback: int = 30,
-                     trend_threshold: float = 0.03,
-                     min_body_size: float = 0.75) -> pd.Series:
+                      high: pd.Series,
+                      low: pd.Series,
+                      close: pd.Series,
+                      trend_lookback: int = 30,
+                      trend_threshold: float = 0.03) -> pd.Series:
     """
     Bullish Englufing Pattern (Reversal)
     ---------
@@ -50,6 +49,26 @@ def bullish_engulfing(open: pd.Series,
         2. a body that completely englufs the body of (1)
     """
     bearish_trend = is_bearish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
-    shifted_open = open.shift(1)
-    shifted_close = close.shift(1)
-    open < open.shift(1)
+    outisde_body = body_outside_body(open, close)
+    return (bearish_trend & outisde_body & positive_close(open, close))
+
+
+def bearish_engulfing(open: pd.Series,
+                      high: pd.Series,
+                      low: pd.Series,
+                      close: pd.Series,
+                      trend_lookback: int = 30,
+                      trend_threshold: float = 0.03) -> pd.Series:
+    """
+    Bullish Englufing Pattern (Reversal)
+    ---------
+
+    Candles:
+    ---------
+    In a bearish trend:
+        1. a small body
+        2. a body that completely englufs the body of (1)
+    """
+    bearish_trend = is_bullish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
+    outisde_body = body_outside_body(open, close)
+    return (bearish_trend & outisde_body & negative_close(open, close))
