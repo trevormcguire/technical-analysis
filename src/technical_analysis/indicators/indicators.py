@@ -185,3 +185,28 @@ def stochastic(high: pd.Series,
     perc_d = sma(perc_k, perc_d_smoothing)  # the trigger line
     return perc_k, perc_d
 
+
+def macd(price: pd.Series,
+         fast_period: int = 12,
+         slow_period: int = 26,
+         signal_period: int = 9,
+         return_histogram: bool = True) -> pd.Series:
+    """
+    Moving Average Convergence/Divergence (MACD)
+
+    Calculation:
+    -----------
+        MACD Line: (12-day EMA - 26-day EMA)
+        Signal Line: 9-day EMA of MACD Line
+        MACD Histogram: MACD Line - Signal Line
+    
+    Reference:
+    -----------
+        https://school.stockcharts.com/doku.php?id=technical_indicators:moving_average_convergence_divergence_macd
+
+    """
+    macd_line = ema(price, period=fast_period) - ema(price, period=slow_period)
+    signal_line = ema(macd_line, signal_period)
+    if return_histogram:
+        return macd_line - signal_line
+    return signal_line
