@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "technical-analysis"
+version = "0.0.1"
+authors = [
+  { name="Trevor McGuire", email="trevormcguire13@gmail.com" },
+]
+description = "Technical Analysis with Python"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.0"
+
+[project.urls]
+"Homepage" = "https://github.com/trevormcguire/technical-analysis"
