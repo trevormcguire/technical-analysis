@@ -3,6 +3,7 @@ from typing import Tuple
 import mplfinance as mpf
 import pandas as pd
 
+
 def plot(ohlc_data: pd.DataFrame,
          kind: str = "candle",
          volume: bool = False,

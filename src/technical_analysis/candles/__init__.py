@@ -10,18 +10,18 @@ Detecting Japanese Candlestick Patterns in Python
 Candlestick Terms:
 -------------
     1. Body
-        > the open-close range
+        > price action between (open, close)
     2. Upper Shadow
-        > the high
+        > price action between (max(open, close), high)
     3. Lower Shadow
-        > the low
+        > price action between (min(open, close), low)
 -------------
 References:
 -------------
     1. Candlestick Charting Exaplined, 3rd Edition (Morris) -- 
     2. CMT Level II Cirriculum (2019) -- Wiley
     3. https://school.stockcharts.com/doku.php?id=chart_analysis:candlestick_pattern_dictionary
-
+-------------
 """
 from technical_analysis.candles.plot import plot
 from technical_analysis.candles.reversal import *
