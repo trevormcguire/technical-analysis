@@ -63,7 +63,7 @@ def is_long_body(open: pd.Series,
     """
     high_low_range = np.abs(high - low)
     close_open_range = np.abs(close - open) 
-    has_large_body = close_open_range > high_low_range - (high_low_range*min_body_size)
+    has_large_body = close_open_range > (high_low_range*min_body_size)
     if not lookback:
         return has_large_body
     shifted_series = [close_open_range.shift(n) for n in range(1, lookback+1)]
@@ -90,8 +90,9 @@ def is_short_body(open: pd.Series,
     """
     high_low_range = np.abs(high - low)
     close_open_range = np.abs(close - open) 
-    has_small_body = close_open_range < high_low_range - (high_low_range*max_body_size)
-
+    has_small_body = close_open_range < (high_low_range*max_body_size)
+    if not lookback:
+        return has_small_body
     shifted_series = [close_open_range.shift(n) for n in range(1, lookback+1)]
     shifted_series = np.min(pd.concat(shifted_series, axis=1), axis=1)  # min open-close range of all lookback periods
     is_relatively_small = close_open_range < (shifted_series * max_relative_size)

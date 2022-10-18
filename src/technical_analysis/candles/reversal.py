@@ -1,8 +1,15 @@
+from audioop import reverse
 import numpy as np
 import pandas as pd
 
 from technical_analysis.utils import is_bullish_trend, is_bearish_trend, get_body
-from technical_analysis.candles.single import is_long_body, negative_close, positive_close, body_outside_body
+from technical_analysis.candles.single import (is_bearish_gap,
+                                               is_bullish_gap,
+                                               is_doji,
+                                               is_long_body,
+                                               negative_close,
+                                               positive_close,
+                                               body_outside_body)
 
 
 def dark_cloud(open: pd.Series,
@@ -79,7 +86,7 @@ def n_black_crows(open: pd.Series,
                   low: pd.Series,
                   close: pd.Series,
                   n: int,
-                  lookback: int = 20,
+                  lookback: int = 30,
                   min_body_size: float = 0.75,
                   close_threshold: float = 0.002) -> pd.Series:
     """
@@ -115,7 +122,7 @@ def n_white_soldiers(open: pd.Series,
                      low: pd.Series,
                      close: pd.Series,
                      n: int,
-                     lookback: int = 20,
+                     lookback: int = 30,
                      min_body_size: float = 0.75,
                      close_threshold: float = 0.002) -> pd.Series:
     """
@@ -145,3 +152,84 @@ def n_white_soldiers(open: pd.Series,
         are_crows = are_crows & are_crows.shift(shift)
     return downtrend & are_crows
 
+
+def bullish_island(open: pd.Series,
+                   high: pd.Series,
+                   low: pd.Series,
+                   close: pd.Series,
+                   min_gap_size: float = 0.001,
+                   lookback: int = 30) -> pd.Series:
+    """
+    Bullish island reversal
+    """
+    downtrend = is_bearish_trend(close, lookback)
+    down_gap = is_bearish_gap(high, low, min_gap_size)
+    up_gap = is_bullish_gap(high ,low, min_gap_size)
+    return downtrend & down_gap.shift(1) & up_gap
+
+
+def bearish_island(open: pd.Series,
+                   high: pd.Series,
+                   low: pd.Series,
+                   close: pd.Series,
+                   min_gap_size: float = 0.001,
+                   lookback: int = 30) -> pd.Series:
+    """
+    Bullish island reversal
+    """
+    uptrend = is_bullish_trend(close, lookback)
+    up_gap = is_bullish_gap(high ,low, min_gap_size)
+    down_gap = is_bearish_gap(high, low, min_gap_size)
+    return uptrend & up_gap.shift(1) & down_gap
+
+
+def bullish_star(open: pd.Series,
+                 high: pd.Series,
+                 low: pd.Series,
+                 close: pd.Series,
+                 lookback: int = 30,
+                 min_body_size: float = 0.7,
+                 relative_threshold: float = 0.3,
+                 min_gap_size: float = 0.001) -> pd.Series:
+    """
+    Morning Doji Start Reversal
+
+    Candles:
+    ----------
+        1. long black body
+        2. short doji-like candle with a gap-down
+        3. long-ish white candle that has (low, close) > (prev_low, prev_close)
+    """
+    downtrend = is_bearish_trend(close, lookback)
+    long_body_exists = is_long_body(open, high, low, close, min_body_size=min_body_size, lookback=0)
+    long_red = long_body_exists & negative_close(open, close)
+    valid_star = is_doji(open, high, low, close, relative_threshold=relative_threshold)
+    valid_star = valid_star & is_bearish_gap(high, low, min_gap_size=min_gap_size)
+    reverse_candle = long_body_exists & positive_close(open, close)
+    return downtrend & long_red.shift(2) & valid_star.shift(1) & reverse_candle & is_bullish_gap(high, low, min_gap_size)
+
+
+def bearish_star(open: pd.Series,
+                 high: pd.Series,
+                 low: pd.Series,
+                 close: pd.Series,
+                 lookback: int = 30,
+                 min_body_size: float = 0.7,
+                 relative_threshold: float = 0.3,
+                 min_gap_size: float = 0.001) -> pd.Series:
+    """
+    Evening Doji Start Reversal
+
+    Candles:
+    ----------
+        1. long white body
+        2. short doji-like candle with a gap-up
+        3. long-ish black candle that reverses direction
+    """
+    uptrend = is_bullish_trend(close, lookback)
+    long_body_exists = is_long_body(open, high, low, close, min_body_size=min_body_size, lookback=0)
+    long_green = long_body_exists & positive_close(open, close)
+    valid_star = is_doji(open, high, low, close, relative_threshold=relative_threshold)
+    valid_star = valid_star & is_bullish_gap(high, low, min_gap_size=min_gap_size)
+    reverse_candle = long_body_exists & negative_close(open, close)
+    return uptrend & long_green.shift(2) & valid_star.shift(1) & reverse_candle & is_bearish_gap(high, low, min_gap_size)
