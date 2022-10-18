@@ -9,22 +9,45 @@ def slope(x):
 
 def get_trend(price: pd.Series, lookback: int) -> pd.Series:
     """
-    Uses slope as a proxy for trend
+    Uses percentage change from 'lookback' periods ago as a proxy for trend
     """
-    return price.rolling(lookback, min_periods=lookback).apply(slope)
+    shifted = price.shift(lookback)
+    return (price - shifted) / shifted
 
 
-def is_bullish_trend(price: pd.Series, lookback: int, threshold: float = 0.0005) -> pd.Series:
+def is_bullish_trend(price: pd.Series, lookback: int, threshold: float = None) -> pd.Series:
     """
-    Determines whether the trend (slope) as a % of 'price' is > threshold
+    Determines whether the trend is > threshold
+
+    Params:
+    --------
+        'lookback':
+            number of periods ago to compare current price to
+        'threshold':
+            min percentage change from 'lookback' periods ago to count as bullish trend
+            > defaults to (lookback/1000)
     """
-    threshold = max(threshold, threshold*-1)
-    return (get_trend(price, lookback) / price) > threshold
+    if threshold is None:
+        threshold = (lookback/1000)
+    else:
+        threshold = max(threshold, threshold * -1)
+    return get_trend(price, lookback) > threshold
 
 
-def is_bearish_trend(price: pd.Series, lookback: int, threshold: float = -0.0005) -> pd.Series:
+def is_bearish_trend(price: pd.Series, lookback: int, threshold: float = None) -> pd.Series:
     """
-    Determines whether the trend (slope) as a % of 'price' is < threshold
+    Determines whether the trend is < threshold
+
+    Params:
+    --------
+        'lookback':
+            number of periods ago to compare current price to
+        'threshold':
+            max percentage change from 'lookback' periods ago to count as bearish trend
+            > defaults to (lookback/1000) * -1
     """
-    threshold = min(threshold, threshold*-1)
-    return (get_trend(price, lookback) / price) < threshold
+    if threshold is None:
+        threshold = (lookback/1000) * -1
+    else:
+        threshold = min(threshold, threshold * -1)
+    return get_trend(price, lookback) < threshold
