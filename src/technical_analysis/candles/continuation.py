@@ -1,11 +1,110 @@
 import pandas as pd
 
-from technical_analysis.utils import is_bearish_trend, is_bullish_trend
+from technical_analysis.utils import is_bearish_trend, is_bullish_trend, is_new_high, is_new_low
 from technical_analysis.candles.single import (is_long_body,
                                                is_bearish_gap,
                                                is_bullish_gap,
                                                positive_close,
-                                               negative_close)
+                                               negative_close,
+                                               body_inside_shadow)
+
+
+def rising_n(open: pd.Series,
+             high: pd.Series,
+             low: pd.Series,
+             close: pd.Series,
+             n: int,
+             lookback: int = 20) -> pd.Series:
+    """
+    Rising 'n' Method
+    ------------
+
+
+    Candles:
+    ------------
+        1. a long green body
+        2. 'n' candles, each inside high-low range of (1)
+        3. n+2 candle closes at a new high (determined by close > all closes 'lookback' periods ago)
+    """
+    bullish_trend = is_bullish_trend(close, lookback=lookback)
+    long_green = is_long_body(open, high, low, close) & positive_close(open, close)
+    insides = []
+    shifts = list(range(n, 0, -1))
+    for i in range(1, n+1):
+        n_shift = shifts[i-1]
+        insides.append(body_inside_shadow(open, high, low, close, lookback=i).shift(n_shift))
+    combined_insides = insides.pop(0)
+    for series in insides:
+        combined_insides = combined_insides & series
+    return bullish_trend & long_green & combined_insides & is_new_high(close, lookback)
+
+
+def rising_three(open: pd.Series,
+                 high: pd.Series,
+                 low: pd.Series,
+                 close: pd.Series,
+                 lookback: int = 20) -> pd.Series:
+    """
+    Rising Three Method
+    ------------
+
+
+    Candles:
+    ------------
+        1. a long green body
+        2. three candles, each inside high-low range of (1)
+        3. fifth candle closes at a new high (determined by close > all closes 'lookback' periods ago)
+    """
+    return rising_n(open, high, low, close, n=3, lookback=lookback)
+
+
+def falling_n(open: pd.Series,
+              high: pd.Series,
+              low: pd.Series,
+              close: pd.Series,
+              n: int,
+              lookback: int = 20) -> pd.Series:
+    """
+    Rising 'n' Method
+    ------------
+
+
+    Candles:
+    ------------
+        1. a long red body
+        2. 'n' candles, each inside high-low range of (1)
+        3. n+2 candle closes at a new low (determined by close < all closes 'lookback' periods ago)
+    """
+    bullish_trend = is_bearish_trend(close, lookback=lookback)
+    long_green = is_long_body(open, high, low, close) & negative_close(open, close)
+    insides = []
+    shifts = list(range(n, 0, -1))
+    for i in range(1, n+1):
+        n_shift = shifts[i-1]
+        insides.append(body_inside_shadow(open, high, low, close, lookback=i).shift(n_shift))
+    combined_insides = insides.pop(0)
+    for series in insides:
+        combined_insides = combined_insides & series
+    return bullish_trend & long_green & combined_insides & is_new_low(close, lookback)
+
+
+def falling_three(open: pd.Series,
+                  high: pd.Series,
+                  low: pd.Series,
+                  close: pd.Series,
+                  lookback: int = 20) -> pd.Series:
+    """
+    Falling Three Method
+    ------------
+
+
+    Candles:
+    ------------
+        1. a long red body
+        2. three candles, each inside high-low range of (1)
+        3. fifth candle closes at a new low (determined by close < all closes 'lookback' periods ago)
+    """
+    return falling_n(open, high, low, close, n=3, lookback=lookback)
 
 
 def bearish_tasuki_gap(open: pd.Series,

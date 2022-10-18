@@ -51,3 +51,11 @@ def is_bearish_trend(price: pd.Series, lookback: int, threshold: float = None) -
     else:
         threshold = min(threshold, threshold * -1)
     return get_trend(price, lookback) < threshold
+
+
+def is_new_high(price: pd.Series, lookback: int):
+    return price == price.rolling(lookback).max()
+
+
+def is_new_low(price: pd.Series, lookback: int):
+    return price == price.rolling(lookback).min()

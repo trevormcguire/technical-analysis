@@ -17,7 +17,7 @@ def negative_close(open: pd.Series, close: pd.Series) -> pd.Series:
     return close < open
 
 
-def is_bearish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.006) -> pd.Series:
+def is_bearish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
     """
     Determines whether yesterday's low was greater than today's high (plus an optional threshold factor)
 
@@ -29,7 +29,7 @@ def is_bearish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.006)
     return shifted_low > high + (high*min_gap_size)
 
 
-def is_bullish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.006) -> pd.Series:
+def is_bullish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
     """
     Determines whether yesterday's high was less than today's low (minus an optional threshold factor)
     """
@@ -37,7 +37,7 @@ def is_bullish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.006)
     return shifted_high < low - (low*min_gap_size)
 
 
-def is_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.006) -> pd.Series:
+def is_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
     """
     Determines whether a gap is present (direction-agnostic)
     """
@@ -172,16 +172,17 @@ def is_marubozu(open: pd.Series,
 
 def is_outside(high: pd.Series,
                low: pd.Series,
-               threshold: float = 0.001) -> pd.Series:
+               threshold: float = 0.001,
+               lookback: int = 1) -> pd.Series:
     """
     Determines if a candle's shadow is larger than shadow of prior candle (outside)
     Current shadow is outside previous shadow
     """
     if not threshold:
-        return (high > high.shift(1)) & (low < low.shift(1))
-    shifted_high = high.shift(1)
+        return (high > high.shift(lookback)) & (low < low.shift(lookback))
+    shifted_high = high.shift(lookback)
     shifted_high = shifted_high + (shifted_high*threshold)
-    shifted_low = low.shift(1)
+    shifted_low = low.shift(lookback)
     shifted_low = shifted_low - (shifted_low*threshold)
     return (high > shifted_high) & (low < shifted_low)
 
@@ -190,13 +191,14 @@ def body_outside_shadow(open: pd.Series,
                         high: pd.Series,
                         low: pd.Series,
                         close: pd.Series,
-                        threshold: float = 0.001) -> pd.Series:
+                        threshold: float = 0.001,
+                        lookback: int = 1) -> pd.Series:
     """
     Current body is outside previous shadow
     """
-    shifted_high = high.shift(1)
+    shifted_high = high.shift(lookback)
     shifted_high = shifted_high + (shifted_high*threshold)
-    shifted_low = low.shift(1)
+    shifted_low = low.shift(lookback)
     shifted_low = shifted_low - (shifted_low*threshold)
 
     upper_body = pd.concat([open, close], axis=1).max(axis=1)
@@ -206,32 +208,34 @@ def body_outside_shadow(open: pd.Series,
 
 def body_outside_body(open: pd.Series,
                       close: pd.Series,
-                      threshold: float = 0.001) -> pd.Series:
+                      threshold: float = 0.001,
+                      lookback: int = 1) -> pd.Series:
     """
     Current body is outside previous bdoy
     """
     upper_body = pd.concat([open, close], axis=1).max(axis=1)
     lower_body = pd.concat([open, close], axis=1).min(axis=1)
 
-    shifted_upper_body = upper_body.shift(1)
+    shifted_upper_body = upper_body.shift(lookback)
     shifted_upper_body = shifted_upper_body + (shifted_upper_body*threshold)
-    shifted_lower_body = lower_body.shift(1)
+    shifted_lower_body = lower_body.shift(lookback)
     shifted_lower_body = shifted_lower_body - (shifted_lower_body*threshold)
     return (upper_body > shifted_upper_body) & (lower_body < shifted_lower_body)
 
 
 def is_inside(high: pd.Series,
               low: pd.Series,
-              threshold: float = 0.001) -> pd.Series:
+              threshold: float = 0.001,
+              lookback: int = 1) -> pd.Series:
     """
     Determines if a candle's shadow is smaller than shadow of prior candle (outside)
     Current shadow is inside prior shadow
     """
     if not threshold:
-        return (high < high.shift(1)) & (low > low.shift(1))
-    shifted_high = high.shift(1)
+        return (high < high.shift(lookback)) & (low > low.shift(lookback))
+    shifted_high = high.shift(lookback)
     shifted_high = shifted_high - (shifted_high*threshold)
-    shifted_low = low.shift(1)
+    shifted_low = low.shift(lookback)
     shifted_low = shifted_low + (shifted_low*threshold)
     return (high < shifted_high) & (low > shifted_low)
 
@@ -240,7 +244,8 @@ def shadow_inside_body(open: pd.Series,
                        high: pd.Series,
                        low: pd.Series,
                        close: pd.Series,
-                       threshold: float = 0.001) -> pd.Series:
+                       threshold: float = 0.001,
+                       lookback: int = 1) -> pd.Series:
     """
     Current shadow is inside previous body
     """
@@ -248,20 +253,41 @@ def shadow_inside_body(open: pd.Series,
     prev_upper_body = prev_upper_body - (prev_upper_body * threshold)
     prev_lower_body = pd.concat([open, close], axis=1).min(axis=1)
     prev_lower_body = prev_lower_body + (prev_lower_body * threshold)
-    return (high < prev_upper_body.shift(1)) & (low > prev_lower_body.shift(1))
+    return (high < prev_upper_body.shift(lookback)) & (low > prev_lower_body.shift(lookback))
 
 
 def body_inside_body(open: pd.Series,
                      close: pd.Series,
-                     threshold: float = 0.001) -> pd.Series:
+                     threshold: float = 0.001,
+                     lookback: int = 1) -> pd.Series:
     """
     Current body is inside previous body
     """
     upper_body = pd.concat([open, close], axis=1).max(axis=1)
     lower_body = pd.concat([open, close], axis=1).min(axis=1)
 
-    shifted_upper_body = upper_body.shift(1)
+    shifted_upper_body = upper_body.shift(lookback)
     shifted_upper_body = shifted_upper_body - (shifted_upper_body*threshold)
-    shifted_lower_body = lower_body.shift(1)
+    shifted_lower_body = lower_body.shift(lookback)
     shifted_lower_body = shifted_lower_body + (shifted_lower_body*threshold)
     return (upper_body < shifted_upper_body) & (lower_body > shifted_lower_body)
+
+
+def body_inside_shadow(open: pd.Series,
+                       high: pd.Series,
+                       low: pd.Series,
+                       close: pd.Series,
+                       threshold: float = 0.001,
+                       lookback: int = 1) -> pd.Series:
+    """
+    Current body is inside previous shadow
+    """
+    upper_body = pd.concat([open, close], axis=1).max(axis=1)
+    lower_body = pd.concat([open, close], axis=1).min(axis=1)
+
+    high = high.shift(lookback)
+    high = high - (high * threshold)
+    low = low.shift(lookback)
+    low = low + (low * threshold)
+
+    return (upper_body < high) & (lower_body > low)

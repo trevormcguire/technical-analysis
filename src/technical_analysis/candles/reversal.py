@@ -72,3 +72,4 @@ def bearish_engulfing(open: pd.Series,
     bearish_trend = is_bullish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
     outisde_body = body_outside_body(open, close)
     return (bearish_trend & outisde_body & negative_close(open, close))
+
