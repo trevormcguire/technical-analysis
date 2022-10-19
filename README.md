@@ -4,8 +4,22 @@ Technical Analysis (TA) is the study of price movements.
 
 This package aims to provide various TA tools, such as candlestick pattern recognition, technical overlays, technical indicators, and statistical analysis.
 
-#### TO DO:
-- The next version will provide tools for backtesting
+## Why Use This Library?
+
+The Technical Analysis Library is still in its early days, but already has the following:
+
+1. Recognition for 30+ Candlestick Patterns
+2. Customizable Candlestick Pattern Functions
+3. 10+ customizable technical indicators
+4. 10+ moving average types (including adaptive)
+5. Technical overlays
+6. Parameterizable Technical signals
+
+
+### Coming Soon:
+- The next version will provide:
+       - tools for backtesting
+       - more indicators, signals, candlestick patterns
 
 
 ## Technical Overlays Example Usage
