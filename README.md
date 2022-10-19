@@ -1,5 +1,13 @@
 # Technical Analysis for Python
 
+Technical Analysis (TA) is the study of price movements.
+
+This package aims to provide various TA tools, such as candlestick pattern recognition, technical overlays, technical indicators, and statistical analysis.
+
+#### TO DO:
+- The next version will provide tools for backtesting
+
+
 ## Technical Overlays Example Usage
 ```
 >>> import pandas as pd
@@ -40,6 +48,7 @@
 ```
 
 ### Easily Get Moving Average Crossover Signals
+- Return the indexes at which a crossover occurs
 ```
 >>> overlays.bullish_crossover_signal(spy["ema20"], spy["ema50"])
 array([ 168,  213,  275,  454,  573,  755,  917, 1039, 1185, 1429, 1654,
@@ -74,4 +83,25 @@ spy["stoch_k"], spy["stoch_d"] = indicators.stochastic(spy.high, spy.low, spy.cl
 
 # macd histogram
 >>> spy["macd_histogram"] = indicators.macd(spy.close, return_histogram=True)
+```
+
+## Candlestick Pattern Recognition
+```
+>>> spy["gap_down"] = candles.is_gap_down(spy.high, spy.low, min_gap_size=0.003)
+>>> spy["gap_up"] = candles.is_gap_down(spy.high, spy.low, min_gap_size=0.003)
+>>> spy["long_body"] = candles.is_long_body(spy.open, spy.high, spy.low, spy.close, min_body_size=0.7)
+>>> spy["doji"] = candles.is_doji(spy.open, spy.high, spy.low, spy.close, relative_threshold=0.1)
+>>> spy["outside"] = candles.is_outside(spy.high, spy.low)
+>>> spy["inside"] = candles.is_inside(spy.high, spy.low)
+>>> spy["spinning_top"] = candles.spinning_top(spy.open, spy.high, spy.low, spy.close)
+>>> spy["marubozu"] = candles.is_marubozu(spy.open, spy.high, spy.low, spy.close, max_shadow_size=0.2)
+>>> spy["dark_cloud"] = candles.dark_cloud(spy.open,
+                                           spy.high,
+                                           spy.low,
+                                           spy.close,
+                                           min_body_size=0.65,
+                                           new_high_periods=30)
+>>> spy["bullish_engulfing"] = candles.bullish_engulfing(spy.open, spy.high, spy.low, spy.close)
+>>> spy["bearish_engulfing"] = candles.bearish_engulfing(spy.open, spy.high, spy.low, spy.close)
+
 ```

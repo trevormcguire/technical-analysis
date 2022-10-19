@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 
 from technical_analysis.utils import is_bullish_trend, is_bearish_trend, get_body
-from technical_analysis.candles.single import (is_bearish_gap,
-                                               is_bullish_gap,
+from technical_analysis.candles.single import (is_gap_down,
+                                               is_gap_up,
                                                is_doji,
                                                is_long_body,
                                                negative_close,
@@ -18,8 +18,8 @@ def dark_cloud(open: pd.Series,
                close: pd.Series,
                trend_lookback: int = 30,
                trend_threshold: float = 0.03,
-               min_body_size: float = 0.75,
-               new_high_periods: int = 100) -> pd.Series:
+               min_body_size: float = 0.7,
+               new_high_periods: int = 30) -> pd.Series:
     """
     Bearish Reversal Pattern
 
@@ -163,8 +163,8 @@ def bullish_island(open: pd.Series,
     Bullish island reversal
     """
     downtrend = is_bearish_trend(close, lookback)
-    down_gap = is_bearish_gap(high, low, min_gap_size)
-    up_gap = is_bullish_gap(high ,low, min_gap_size)
+    down_gap = is_gap_down(high, low, min_gap_size)
+    up_gap = is_gap_up(high ,low, min_gap_size)
     return downtrend & down_gap.shift(1) & up_gap
 
 
@@ -178,8 +178,8 @@ def bearish_island(open: pd.Series,
     Bullish island reversal
     """
     uptrend = is_bullish_trend(close, lookback)
-    up_gap = is_bullish_gap(high ,low, min_gap_size)
-    down_gap = is_bearish_gap(high, low, min_gap_size)
+    up_gap = is_gap_up(high ,low, min_gap_size)
+    down_gap = is_gap_down(high, low, min_gap_size)
     return uptrend & up_gap.shift(1) & down_gap
 
 
@@ -204,9 +204,9 @@ def bullish_star(open: pd.Series,
     long_body_exists = is_long_body(open, high, low, close, min_body_size=min_body_size, lookback=0)
     long_red = long_body_exists & negative_close(open, close)
     valid_star = is_doji(open, high, low, close, relative_threshold=relative_threshold)
-    valid_star = valid_star & is_bearish_gap(high, low, min_gap_size=min_gap_size)
+    valid_star = valid_star & is_gap_down(high, low, min_gap_size=min_gap_size)
     reverse_candle = long_body_exists & positive_close(open, close)
-    return downtrend & long_red.shift(2) & valid_star.shift(1) & reverse_candle & is_bullish_gap(high, low, min_gap_size)
+    return downtrend & long_red.shift(2) & valid_star.shift(1) & reverse_candle & is_gap_up(high, low, min_gap_size)
 
 
 def bearish_star(open: pd.Series,
@@ -230,6 +230,6 @@ def bearish_star(open: pd.Series,
     long_body_exists = is_long_body(open, high, low, close, min_body_size=min_body_size, lookback=0)
     long_green = long_body_exists & positive_close(open, close)
     valid_star = is_doji(open, high, low, close, relative_threshold=relative_threshold)
-    valid_star = valid_star & is_bullish_gap(high, low, min_gap_size=min_gap_size)
+    valid_star = valid_star & is_gap_up(high, low, min_gap_size=min_gap_size)
     reverse_candle = long_body_exists & negative_close(open, close)
-    return uptrend & long_green.shift(2) & valid_star.shift(1) & reverse_candle & is_bearish_gap(high, low, min_gap_size)
+    return uptrend & long_green.shift(2) & valid_star.shift(1) & reverse_candle & is_gap_down(high, low, min_gap_size)

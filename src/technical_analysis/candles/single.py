@@ -18,7 +18,7 @@ def negative_close(open: pd.Series, close: pd.Series) -> pd.Series:
     return close < open
 
 
-def is_bearish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
+def is_gap_down(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
     """
     Determines whether yesterday's low was greater than today's high (plus an optional threshold factor)
 
@@ -30,7 +30,7 @@ def is_bearish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003)
     return shifted_low > high + (high*min_gap_size)
 
 
-def is_bullish_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
+def is_gap_up(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
     """
     Determines whether yesterday's high was less than today's low (minus an optional threshold factor)
     """
@@ -42,7 +42,7 @@ def is_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.S
     """
     Determines whether a gap is present (direction-agnostic)
     """
-    return (is_bullish_gap(high, low, min_gap_size) | is_bearish_gap(high, low, min_gap_size))
+    return (is_gap_up(high, low, min_gap_size) | is_gap_down(high, low, min_gap_size))
 
 
 def is_long_body(open: pd.Series,
@@ -159,7 +159,7 @@ def is_marubozu(open: pd.Series,
                 high: pd.Series,
                 low: pd.Series,
                 close: pd.Series,
-                max_shadow_size: float = 0.05) -> pd.Series:
+                max_shadow_size: float = 0.2) -> pd.Series:
     """
     Determines if the candle has very small shadows on both ends(aka bald, shaven)
     ---------

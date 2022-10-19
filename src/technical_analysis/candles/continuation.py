@@ -2,8 +2,8 @@ import pandas as pd
 
 from technical_analysis.utils import is_bearish_trend, is_bullish_trend, is_new_high, is_new_low
 from technical_analysis.candles.single import (is_long_body,
-                                               is_bearish_gap,
-                                               is_bullish_gap,
+                                               is_gap_down,
+                                               is_gap_up,
                                                positive_close,
                                                negative_close,
                                                body_inside_shadow)
@@ -136,7 +136,7 @@ def bearish_tasuki_gap(open: pd.Series,
     """
     bearish_trend = is_bearish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
     bearish_long_body = is_long_body(open, high, low, close, min_body_size=min_body_size) & negative_close(open, close)
-    bearish_gap = is_bearish_gap(high, low, min_gap_size=min_gap_size)
+    bearish_gap = is_gap_down(high, low, min_gap_size=min_gap_size)
     # open > close in previous body
     opened_in_prev_body = (open > close.shift(1)) & (open < open.shift(1))
     # bearish gap so high(i) < low(i-1)
@@ -173,7 +173,7 @@ def bullish_tasuki_gap(open: pd.Series,
     """
     bullish_trend = is_bullish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
     bullish_long_body = is_long_body(open, high, low, close, min_body_size=min_body_size) & positive_close(open, close)
-    bullish_gap = is_bullish_gap(high, low, min_gap_size=min_gap_size)
+    bullish_gap = is_gap_up(high, low, min_gap_size=min_gap_size)
     # close > open in previous body
     opened_in_prev_body = (open > open.shift(1)) & (open < close.shift(1))
     closed_inside_gap = (close < low.shift(1)) & (close > high.shift(2))
