@@ -1,9 +1,9 @@
-from typing import Tuple
+from typing import Tuple, Callable
 
 import numpy as np
 import pandas as pd
 
-from technical_analysis.overlays.moving_average import sma, ema
+from technical_analysis.overlays.moving_average import sma, ema, wilder_ma
 
 
 def std(price: pd.Series, period: int) -> pd.Series:
@@ -24,7 +24,8 @@ def roc(price: pd.Series, period: int) -> pd.Series:
 def atr(high: pd.Series,
         low: pd.Series,
         close: pd.Series,
-        period: int = 14) -> pd.Series:
+        period: int = 14,
+        use_wilder_ma: bool = True) -> pd.Series:
     """
     Average True Range (measures volatility)
     and is the 14 day moving average of the following:
@@ -41,11 +42,14 @@ def atr(high: pd.Series,
     low_cp = np.abs(low - close.shift())
     df = pd.concat([high_low, high_cp, low_cp], axis=1)
     true_range = np.max(df, axis=1)
-    average_true_range = true_range.rolling(period).mean()
+    if use_wilder_ma:
+        average_true_range = wilder_ma(true_range, period)
+    else:
+        average_true_range = sma(true_range, period)
     return average_true_range
 
 
-def rsi(price: pd.Series, period: int) -> pd.Series:
+def rsi(price: pd.Series, period: int, ma_fn: Callable = sma, use_wilder_ma: bool = True) -> pd.Series:
     """
     Relative Strength Index
 
@@ -56,10 +60,13 @@ def rsi(price: pd.Series, period: int) -> pd.Series:
         RS = Average Gain / Average Loss
         RSI = 100 - (100/(1+RS))
     """
+    if use_wilder_ma:
+        ma_fn = wilder_ma
+
     delta = price.diff()[1:] #first row is nan
     gains, losses = delta.clip(lower=0), delta.clip(upper=0).abs()
-    gains = sma(gains, period)
-    losses = sma(losses, period)
+    gains = ma_fn(gains, period)
+    losses = ma_fn(losses, period)
     rs = gains / losses
     rsi = 100.0 - (100.0 / (1.0 + rs))
     rsi[:] = np.select([losses == 0, gains == 0, True], [100, 0, rsi])

@@ -1,6 +1,5 @@
 from typing import Tuple
 
-import numpy as np
 import pandas as pd
 
 from technical_analysis.indicators import atr
