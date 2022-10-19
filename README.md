@@ -17,9 +17,9 @@ The Technical Analysis Library is still in its early days, but already has the f
 
 
 ### Coming Soon:
-- The next version will provide:
-       - tools for backtesting
-       - more indicators, signals, candlestick patterns
+The next version will provide:
+- tools for backtesting
+- more indicators, signals, candlestick patterns
 
 
 ## Technical Overlays Example Usage
