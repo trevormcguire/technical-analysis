@@ -30,17 +30,13 @@
 >>> spy["kama20"] = overlays.kama(spy.close, 20, min_smoothing_constant=3, max_smoothing_constant=30)
 >>> spy["kama50"] = overlays.kama(spy.close, 50, min_smoothing_constant=3, max_smoothing_constant=30)
 
+# bollinger bands
 >>> spy["bband_lower"], spy["bband_upper"] = overlays.bbands(spy.close, period=20)
+# donchian bands
 >>> spy["dband_lower"], spy["dband_upper"] = overlays.dbands(spy.close, period=20)
+# keltner bands
 >>> spy["kband_lower"], spy["kband_upper"] = overlays.kbands(spy.high, spy.low, spy.close, period=20)
->>> spy["atr"] = indicators.atr(spy.high, spy.low, spy.close, period=14)
->>> spy["rsi"] = indicators.rsi(spy.close, period=14)
->>> spy["perc_r"] = indicators.perc_r(spy.high, spy.low, spy.close, period=14)
->>> spy["tsi"] = indicators.tsi(spy.close, period1=25, period2=13)
->>> spy["trix"] = indicators.trix(spy.close, period=15)
->>> spy["stoch_k"], spy["stoch_d"] = indicators.stochastic(spy.high, spy.low, spy.close, period=14, perc_k_smoothing=3)
->>> spy["macd_histogram"] = indicators.macd(spy.close, return_histogram=True)
->>> spy.dropna(inplace=True)
+
 ```
 
 ### Easily Get Moving Average Crossover Signals
