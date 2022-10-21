@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 
-def linear_regression(x: np.ndarray, y: np.ndarray = None) -> tuple:
+def linear_regression(x: np.ndarray, y: np.ndarray = None) -> Tuple[float]:
     if y is None:
         return np.polyfit(np.arange(len(x)), x, 1)
     return np.polyfit(x, y, 1)
@@ -88,3 +88,17 @@ def hurst_exp(price: pd.Series,
     if return_c:
         return H, c
     return H
+
+
+def fft_period(arr: pd.Series, top_n: int = 1):
+    """
+    Estimates the period using the FFT
+
+    Returns the indexes of the largest amplitudes in the frequency domain,
+        which corresponds to the period in terms of timesteps
+    """
+    arr -= np.mean(arr)  # remove dc component
+    amps = np.fft.rfft(arr)
+    largest_amp_indexes = np.argsort(amps)[::-1]
+    return largest_amp_indexes[:top_n]
+
