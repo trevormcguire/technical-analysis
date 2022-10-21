@@ -21,6 +21,12 @@ The next version will provide:
 - tools for backtesting
 - more indicators, signals, candlestick patterns
 
+## Installing
+Pypi link: https://pypi.org/project/technical-analysis/
+
+```
+pip install technical-analysis
+```
 
 ## Technical Overlays Example Usage
 ```
