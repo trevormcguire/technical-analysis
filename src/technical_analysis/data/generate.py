@@ -10,6 +10,8 @@ def random_walk(length: int,
     """
     Generate an array of values that follow a random walk
 
+    TO DO: add probability to specify persistance for random-walks
+
     Params
     --------
         'length' -> int; size of the array generated
@@ -33,5 +35,3 @@ def random_walk(length: int,
         new_value = np.random.choice(dist)
         values.append(new_value)
     return np.array(values)
-
-    

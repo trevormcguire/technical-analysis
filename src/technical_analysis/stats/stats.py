@@ -4,6 +4,20 @@ import pandas as pd
 import numpy as np
 
 
+def linear_regression(x: np.ndarray, y: np.ndarray = None) -> tuple:
+    if y is None:
+        return np.polyfit(np.arange(len(x)), x, 1)
+    return np.polyfit(x, y, 1)
+
+
+def get_slope(arr: np.ndarray) -> float:
+    return linear_regression(arr)[0]
+
+
+def get_yintercept(arr: np.ndarray) -> float:
+    return linear_regression(arr)[1]
+
+
 def rescaled_range(arr: np.ndarray):
     """
     Calculates Hursts' Rescaled Range,
@@ -35,7 +49,9 @@ def hurst_exp(price: pd.Series,
         1. For each window of size n:
             - calculate R/S
             - take the mean
-            - find the slope as a result of linear regression on (log(R/S), log(n))
+            - Calculate linear regression on (log(R/S), log(n))
+            - m, b = (H, c)
+
 
     Hurst Thresholds:
     ---------------
@@ -68,8 +84,7 @@ def hurst_exp(price: pd.Series,
         for start in range(0, series_length, window_size):
             window_rs_vals.append(rescaled_range([returns[start:start+window_size]]))
         rs_values.append(np.mean(window_rs_vals))
-    A = np.vstack([np.log(window_sizes), np.ones(len(rs_values))]).T
-    H, c = np.linalg.lstsq(A, np.log(rs_values), rcond=-1)[0]
+    H, c = linear_regression(np.log(window_sizes), np.log(rs_values))
     if return_c:
         return H, c
     return H
