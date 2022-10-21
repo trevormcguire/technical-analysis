@@ -3,6 +3,7 @@ from typing import Union, Tuple
 import pandas as pd
 import numpy as np
 
+
 def rescaled_range(arr: np.ndarray):
     """
     Calculates Hursts' Rescaled Range,
@@ -58,14 +59,14 @@ def hurst_exp(price: pd.Series,
     ---------------
         https://en.wikipedia.org/wiki/Hurst_exponent
     """
-    pcts = price.pct_change()[1:]  # first is nan
-    series_length = len(pcts)
+    returns = price.pct_change()[1:]  # return over 1 period; first is nan
+    series_length = len(returns)
     rs_values = []
     window_sizes = range(window_sizes[0], window_sizes[1]+1, window_increment)
     for window_size in window_sizes:
         window_rs_vals = []
         for start in range(0, series_length, window_size):
-            window_rs_vals.append(rescaled_range([pcts[start:start+window_size]]))
+            window_rs_vals.append(rescaled_range([returns[start:start+window_size]]))
         rs_values.append(np.mean(window_rs_vals))
     A = np.vstack([np.log(window_sizes), np.ones(len(rs_values))]).T
     H, c = np.linalg.lstsq(A, np.log(rs_values), rcond=-1)[0]
