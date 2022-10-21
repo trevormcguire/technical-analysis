@@ -70,4 +70,6 @@ def hurst_exp(price: pd.Series,
         rs_values.append(np.mean(window_rs_vals))
     A = np.vstack([np.log(window_sizes), np.ones(len(rs_values))]).T
     H, c = np.linalg.lstsq(A, np.log(rs_values), rcond=-1)[0]
-    return H if not return_c else H, c
+    if return_c:
+        return H, c
+    return H
