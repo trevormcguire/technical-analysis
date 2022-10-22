@@ -10,7 +10,7 @@ def random_walk(length: int,
                 distribution_size: int = 50000,
                 seed: int = None) -> np.ndarray:
     """
-    Generate an array of values that follow a random walk
+    Generate an array of values that follows a random walk
 
     Params
     --------
