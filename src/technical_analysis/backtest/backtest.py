@@ -1,8 +1,14 @@
-from typing import Callable, List, Union
+from __future__ import annotations
+
+import os
+from typing import Callable, Union
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+from technical_analysis.backtest.io_utils import write_json, load_json
 
 
 class BacktestBase(object):
@@ -78,15 +84,16 @@ class BacktestBase(object):
         ...      HigherTrend(column_name="rsi14", lag=50)],
         ... ) # tuple means logical 'or' operation
         ...
-        >>> spy["rsi14"] = indicators.rsi(spy.close, period=14)
-        >>> spy["rsi28"] = indicators.rsi(spy.close, period=28)
+        >>> spy["rsi14"] = technical_analysis.indicators.rsi(spy.close, period=14)
+        >>> spy["rsi28"] = technical_analysis.indicators.rsi(spy.close, period=28)
         >>> backtest = BacktestBase(entry_criteria, exit_criteria)
         >>> backtest.run(spy)
 
     """
     def __init__(self,
                  entry_criteria: Union[list, tuple],
-                 exit_criteria: Union[list, tuple]):
+                 exit_criteria: Union[list, tuple],
+                 **kwargs):
 
         assert type(entry_criteria) in [list, tuple], \
             f"Entry criteria type must be a list or tuple"
@@ -110,7 +117,7 @@ class BacktestBase(object):
         self.entry_criteria = entry_criteria
         self.exit_criteria = exit_criteria
         self.feature_columns = []
-        self.results = {}
+        self.results = kwargs.get("results", {})
 
     def __repr__(self):
         return f"""Backtest(num_entry_conditions={len(self.entry_criteria)},
@@ -178,16 +185,46 @@ class BacktestBase(object):
             return pd.concat(criteria_states, axis=1).any(axis=1)  # column-wise logical 'or'
         return pd.concat(criteria_states, axis=1).all(axis=1)  # column-wise logical 'and'
 
+    def calculate_results(self,
+                          data: pd.DataFrame,
+                          entry_idxs: pd.Series,
+                          exit_idxs: pd.Series) -> dict:
+        raise NotImplementedError
+
     def run(self, data: pd.DataFrame):
         if not self.feature_columns:
             self.feature_columns = list(data.columns)
 
         entry = self._apply_criteria(data, exit=False)  # entry
         exit = self._apply_criteria(data, exit=True)
-        return entry
 
-    def save(self):
-        pass
+        entry_idxs = np.nonzero(entry.to_numpy())[0]
+        exit_idxs = np.nonzero(exit.to_numpy())[0]
+        self.results = self.calculate_results(data, entry_idxs, exit_idxs)
+
+    def save(self, directory: str):
+        """
+        saves the object's state as json inside directory
+        """
+        assert os.path.exists(directory), f"{directory} does not exist."
+        entry_criteria_path = os.path.join(directory, "entry_criteria.json")
+        exit_criteria_path = os.path.join(directory, "exit_criteria.json")
+        results_path = os.path.join(directory, "results.json")
+        write_json(self.entry_criteria, entry_criteria_path)
+        write_json(self.exit_criteria, exit_criteria_path)
+        write_json(self.results, results_path)
+    
+    @classmethod
+    def load(cls, directory: str) -> BacktestBase:
+        """
+        Returns a saved Backtest object from json
+        """
+        assert os.path.exists(directory), f"{directory} does not exist."
+        entry_criteria = load_json(os.path.join(directory, "entry_criteria.json"))
+        exit_criteria = load_json(os.path.join(directory, "exit_criteria.json"))
+        results = load_json(os.path.join(directory, "results.json"))
+        return cls(entry_criteria, exit_criteria, results=results)
 
     def plot(self):
-        pass
+        if not self.results:
+            warn("Must call 'run' before plotting results.")
