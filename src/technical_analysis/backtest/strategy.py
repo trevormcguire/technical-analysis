@@ -23,7 +23,7 @@ class MovingAverageCrossover(Strategy):
         'confirmation_periods' -> int; number of consecutive periods where
                                     - ma1 must be > ma2 if kind=='bullish'
                                     - ma2 must be < ma1 if kind=='bearish'
-        'kind' -> str; 'bullish' or 'bearish'
+        'kind' -> str; one of ['bullish', 'bearish']
     """
     def __init__(self,
                  ma1_name: str,
@@ -38,21 +38,19 @@ class MovingAverageCrossover(Strategy):
         assert kind in ["bullish", "bearish"], "kind must be one of ['bullish', 'bearish']"
         self.kind = kind
     
-    def run_bullish(self, data: pd.DataFrame) -> pd.Series:
+    def _run_bullish(self, data: pd.DataFrame, lookback: int) -> pd.Series:
         above = data[self.ma1_name] > data[self.ma2_name]
         for period in range(1, self.confirmation_periods+1):
             above = above & (data[self.ma1_name].shift(period) > data[self.ma2_name].shift(period))
-        
-        lookback = self.lookback_periods + self.confirmation_periods
+
         prior_below = data[self.ma1_name].shift(lookback) < data[self.ma2_name].shift(lookback)
         return prior_below & above
     
-    def run_bearish(self, data: pd.DataFrame) -> pd.Series:
+    def _run_bearish(self, data: pd.DataFrame, lookback: int) -> pd.Series:
         below = data[self.ma1_name] < data[self.ma2_name]
         for period in range(1, self.confirmation_periods+1):
             below = below & (data[self.ma1_name].shift(period) < data[self.ma2_name].shift(period))
-        
-        lookback = self.lookback_periods + self.confirmation_periods
+
         prior_above = data[self.ma1_name].shift(lookback) > data[self.ma2_name].shift(lookback)
         return prior_above & below
     
@@ -61,7 +59,8 @@ class MovingAverageCrossover(Strategy):
             f"Data length ({len(data)}) must be > lookback_periods {self.lookback_periods}"
         assert len(data) > self.confirmation_periods, \
             f"Data length ({len(data)}) must be > confirmation_periods {self.confirmation_periods}"
+        lookback = self.lookback_periods + self.confirmation_periods
 
         if self.kind == "bullish":
-            return self.run_bullish(data)
-        return self.run_bearish(data)  # guaranteed by assertion in init
+            return self._run_bullish(data, lookback)
+        return self._run_bearish(data, lookback)  # guaranteed by assertion in init
