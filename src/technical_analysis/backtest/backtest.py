@@ -11,7 +11,7 @@ import pandas as pd
 from technical_analysis.backtest.io_utils import write_json, load_json
 
 
-class BacktestBase(object):
+class Backtest(object):
     """
     Backtesting Base Object
     ------------
@@ -57,6 +57,8 @@ class BacktestBase(object):
                                 AND the result of the function some_callable_fn'
 
         'exit_criteria'-> a list or tuple of exit criteria in same format as 'entry_criteria'
+        'max_positions' -> int; maximum number of positions to hold at any given time
+        'use_next_open' -> bool; use next open prices during backtest
     
     Example Usage:
     -------------
@@ -93,6 +95,8 @@ class BacktestBase(object):
     def __init__(self,
                  entry_criteria: Union[list, tuple],
                  exit_criteria: Union[list, tuple],
+                 max_positions: int = 1,
+                 use_next_open: bool = True,
                  **kwargs):
 
         assert type(entry_criteria) in [list, tuple], \
@@ -116,6 +120,8 @@ class BacktestBase(object):
     
         self.entry_criteria = entry_criteria
         self.exit_criteria = exit_criteria
+        self.max_positions = max_positions
+        self.use_next_open = use_next_open
         self.feature_columns = []
         self.results = kwargs.get("results", {})
 
@@ -187,9 +193,33 @@ class BacktestBase(object):
 
     def calculate_results(self,
                           data: pd.DataFrame,
-                          entry_idxs: pd.Series,
-                          exit_idxs: pd.Series) -> dict:
-        raise NotImplementedError
+                          entry: pd.Series,
+                          exit: pd.Series) -> dict:
+        benchmark = (data.close[-1] - data.close[0]) / data.close[0]
+        assert entry.size == exit.size
+        if self.use_next_open:
+            entry = entry[:-1]
+            exit = exit[:-1]
+            action_price = data.open.to_numpy()[1:]
+        else:
+            action_price = data.close.to_numpy() # backtest won't be realistic with this setting
+
+        returns = []
+        positions = []  # FIFO queue
+        for entry, exit, price in list(zip(entry, exit, action_price)):
+            if entry and len(positions) < self.max_positions:
+                positions.append(price)
+            elif exit and positions:
+                entry_price = positions.pop(0)
+                returns.append((price - entry_price) / entry_price)
+
+        return {"benchmark": benchmark,
+                "strategy": np.sum(returns),
+                "max_drawdown": np.min(returns),
+                "max_profit": np.max(returns),
+                "avg_return": np.mean(returns),
+                "std_return": np.std(returns),
+                "returns": returns}
 
     def run(self, data: pd.DataFrame):
         if not self.feature_columns:
@@ -197,27 +227,24 @@ class BacktestBase(object):
 
         entry = self._apply_criteria(data, exit=False)  # entry
         exit = self._apply_criteria(data, exit=True)
-
-        entry_idxs = np.nonzero(entry.to_numpy())[0]
-        exit_idxs = np.nonzero(exit.to_numpy())[0]
-        self.results = self.calculate_results(data, entry_idxs, exit_idxs)
+        self.results = self.calculate_results(data, entry, exit)
 
     def save(self, directory: str):
         """
-        saves the object's state as json inside directory
+        saves the object's state to directory
         """
         assert os.path.exists(directory), f"{directory} does not exist."
         entry_criteria_path = os.path.join(directory, "entry_criteria.json")
         exit_criteria_path = os.path.join(directory, "exit_criteria.json")
         results_path = os.path.join(directory, "results.json")
-        write_json(self.entry_criteria, entry_criteria_path)
-        write_json(self.exit_criteria, exit_criteria_path)
-        write_json(self.results, results_path)
-    
+        write_json(self.entry_criteria, str(entry_criteria_path))
+        write_json(self.exit_criteria, str(exit_criteria_path))
+        write_json(self.results, str(results_path))
+
     @classmethod
-    def load(cls, directory: str) -> BacktestBase:
+    def load(cls, directory: str) -> Backtest:
         """
-        Returns a saved Backtest object from json
+        Returns a saved Backtest object
         """
         assert os.path.exists(directory), f"{directory} does not exist."
         entry_criteria = load_json(os.path.join(directory, "entry_criteria.json"))
