@@ -256,6 +256,7 @@ class Backtest(object):
     def plot(self, figsize: tuple = (10,6)):
         if not self.results:
             warn("Must call 'run' before plotting results.")
+            return
 
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(1,1,1)
