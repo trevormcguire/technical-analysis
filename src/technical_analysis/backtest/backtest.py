@@ -5,6 +5,7 @@ from typing import Callable, Union
 from warnings import warn
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 
@@ -252,6 +253,15 @@ class Backtest(object):
         results = load_json(os.path.join(directory, "results.json"))
         return cls(entry_criteria, exit_criteria, results=results)
 
-    def plot(self):
+    def plot(self, figsize: tuple = (10,6)):
         if not self.results:
             warn("Must call 'run' before plotting results.")
+
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(1,1,1)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+        ax.plot(np.cumsum(self.results["returns"])*100)
+        plt.title("Backtest Cumulative Return")
+        plt.ylabel("Percent Return")
+        plt.xlabel("Num Trades")
+        plt.show()
