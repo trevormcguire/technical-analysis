@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import Callable, Union
 from warnings import warn
 
@@ -8,8 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
-
-from technical_analysis.backtest.io_utils import save_pickle, load_pickle
 
 
 class Backtest(object):
