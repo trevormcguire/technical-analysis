@@ -2,7 +2,7 @@
 
 Technical Analysis (TA) is the study of price movements.
 
-This package aims to provide an extensible framework for working with various TA tools. This includes, but is not limited to: candlestick patterns, technical overlays, technical indicators, statistical analysis, and strategy backtesting.
+This package aims to provide an extensible framework for working with various TA tools. This includes, but is not limited to: candlestick patterns, technical overlays, technical indicators, statistical analysis, and automated strategy backtesting.
 
 ## Why Use This Library?
 
@@ -119,15 +119,15 @@ The technical-analysis library comes with an extensible framework to backtest tr
 >>> from technical_analysis.backtest import Backtest
 >>> from technical_analysis.backtest.strategy import MovingAverageCrossover
 >>>
->>> df = pd.read_csv(filepath)
+>>> spy = pd.read_csv(filepath)
 >>> # test an exponential moving average crossover strategy
->>> df["ema9"] = overlays.ema(spy.close, period=9)
->>> df["ema20"] = overlays.ema(spy.close, period=20)
+>>> spy["ema9"] = overlays.ema(spy.close, period=9)
+>>> spy["ema20"] = overlays.ema(spy.close, period=20)
 >>> 
 >>> backtest = Backtest(entry_criteria=[MovingAverageCrossover("sma9", "sma20", "bullish")],
 ...                     exit_criteria=[MovingAverageCrossover("sma9", "sma20", "bearish")])
 ...
->>> backtest.run(df)
+>>> backtest.run(spy)
 >>> backtest.results
 {'benchmark': 5.56607215019379,
  'strategy': 1.39245960527215,

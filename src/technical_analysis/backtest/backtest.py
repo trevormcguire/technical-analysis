@@ -9,7 +9,7 @@ import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 
-from technical_analysis.backtest.io_utils import write_json, load_json
+from technical_analysis.backtest.io_utils import save_pickle, load_pickle
 
 
 class Backtest(object):
@@ -229,29 +229,6 @@ class Backtest(object):
         entry = self._apply_criteria(data, exit=False)  # entry
         exit = self._apply_criteria(data, exit=True)
         self.results = self.calculate_results(data, entry, exit)
-
-    def save(self, directory: str):
-        """
-        saves the object's state to directory
-        """
-        assert os.path.exists(directory), f"{directory} does not exist."
-        entry_criteria_path = os.path.join(directory, "entry_criteria.json")
-        exit_criteria_path = os.path.join(directory, "exit_criteria.json")
-        results_path = os.path.join(directory, "results.json")
-        write_json(self.entry_criteria, str(entry_criteria_path))
-        write_json(self.exit_criteria, str(exit_criteria_path))
-        write_json(self.results, str(results_path))
-
-    @classmethod
-    def load(cls, directory: str) -> Backtest:
-        """
-        Returns a saved Backtest object
-        """
-        assert os.path.exists(directory), f"{directory} does not exist."
-        entry_criteria = load_json(os.path.join(directory, "entry_criteria.json"))
-        exit_criteria = load_json(os.path.join(directory, "exit_criteria.json"))
-        results = load_json(os.path.join(directory, "results.json"))
-        return cls(entry_criteria, exit_criteria, results=results)
 
     def plot(self, figsize: tuple = (10,6)):
         if not self.results:
