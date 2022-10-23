@@ -303,3 +303,55 @@ def spinning_top(open: pd.Series,
     lower_body, upper_body = get_body(open, close)
     body_width = upper_body - lower_body
     return ((high - upper_body) > body_width) & ((lower_body - low) > body_width)
+
+
+def hammer(open: pd.Series,
+           high: pd.Series,
+           low: pd.Series,
+           close: pd.Series,
+           upper_threshold: float = 0.05,
+           body_size_multiplier: int = 2) -> pd.Series:
+    """
+    Hammer (Hanging Man)
+    -------------
+        Upper shadow is very small or nonexistent
+        Lower shadow is 2-3x the size of the body
+    
+    Params
+    -------
+        'upper_threshold' -> % of candle that upper shadow occupies (float between (0, 1))
+        'body_size_multiplier' -> lower shadow must be at least body_size*body_size_multiplier
+    """
+    lower_body, upper_body = get_body(open, close)
+    lower_shadow = lower_body - low
+    upper_shadow = high - upper_body
+    total_size = high - low
+    body_size = upper_body - lower_body
+    upper_shadow_criteria = (upper_shadow /total_size) < upper_threshold
+    return upper_shadow_criteria & (lower_shadow > (body_size*body_size_multiplier))
+
+
+def inverted_hammer(open: pd.Series,
+                    high: pd.Series,
+                    low: pd.Series,
+                    close: pd.Series,
+                    lower_threshold: float = 0.05,
+                    body_size_multiplier: int = 2) -> pd.Series:
+    """
+    Inverted Hammer (Shooting Star)
+    -------------
+        Lower shadow is very small or nonexistent
+        Upper shadow is 2-3x the size of the body
+    
+    Params
+    -------
+        'lower' -> % of candle that lower shadow occupies (float between (0, 1))
+        'body_size_multiplier' -> upper shadow must be at least body_size*body_size_multiplier
+    """
+    lower_body, upper_body = get_body(open, close)
+    lower_shadow = lower_body - low
+    upper_shadow = high - upper_body
+    total_size = high - low
+    body_size = upper_body - lower_body
+    lower_shadow_criteria = (lower_shadow / total_size) < lower_threshold
+    return lower_shadow_criteria & (upper_shadow > (body_size*body_size_multiplier))

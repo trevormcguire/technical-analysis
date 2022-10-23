@@ -71,7 +71,7 @@ def rsi(price: pd.Series, period: int, ma_fn: Callable = sma, use_wilder_ma: boo
     rsi = 100.0 - (100.0 / (1.0 + rs))
     rsi[:] = np.select([losses == 0, gains == 0, True], [100, 0, rsi])
     valid_rsi = rsi[period - 1:]
-    assert ((0 <= valid_rsi) & (valid_rsi <= 100)).all()
+    # assert ((0 <= valid_rsi) & (valid_rsi <= 100)).all()
     return rsi
 
 

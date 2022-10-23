@@ -14,11 +14,6 @@ def get_body(open: pd.Series, close: pd.Series) -> Tuple[pd.Series]:
     return lower_body, upper_body
 
 
-def slope(x):
-    m, _ = np.polyfit(range(len(x)), x, 1)
-    return m
-
-
 def get_trend(price: pd.Series, lookback: int) -> pd.Series:
     """
     Uses percentage change from 'lookback' periods ago as a proxy for trend
