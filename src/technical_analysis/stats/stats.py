@@ -23,7 +23,7 @@ def period(arr: pd.Series, top_n: int = 1):
     Estimates the period using the FFT
 
     Returns the indexes of the 'top_n' largest amplitudes in the frequency domain,
-        which corresponds to the period of a signal
+    which corresponds to the period of a signal
     """
     arr -= np.mean(arr)  # remove dc component
     amps = np.fft.rfft(arr)

@@ -3,7 +3,7 @@ from typing import Tuple, Callable
 import numpy as np
 import pandas as pd
 
-from technical_analysis.overlays.moving_average import sma, ema, wilder_ma
+from technical_analysis.moving_average import sma, ema, wilder_ma
 
 
 def std(price: pd.Series, period: int) -> pd.Series:

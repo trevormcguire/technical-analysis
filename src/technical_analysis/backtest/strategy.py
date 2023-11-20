@@ -11,19 +11,18 @@ class Strategy(object):
 
 class MovingAverageCrossover(Strategy):
     """
-    Moving Average Crossover Strategy
-    -------------
-
     Parameters:
     ------------
-        'ma1_name' -> str; column name of faster moving average
-        'ma2_name' -> str; column name of slower moving average
-        'lookback_periods' -> int; number of periods to look back to validate crossover
-        'confirmation_periods' -> int; number of consecutive periods where
-                                    - ma1 must be > ma2 if kind=='bullish'
-                                    - ma2 must be < ma1 if kind=='bearish'
-        'kind' -> str; one of ['bullish', 'bearish']
+    `ma1_name`: str; column name of faster moving average
+    `ma2_name`: str; column name of slower moving average
+    `lookback_periods`: int; number of periods to look back to validate crossover
+    `confirmation_periods`: -> int; number of consecutive periods where
+        - ma1 must be > ma2 if kind=='bullish'
+        - ma2 must be < ma1 if kind=='bearish'
+    `kind`: str; one of ['bullish', 'bearish']
     """
+
+    allowed_kinds = ["bullish", "bearish"]
 
     def __init__(
         self,
@@ -37,10 +36,8 @@ class MovingAverageCrossover(Strategy):
         self.ma2_name = ma2_name
         self.confirmation_periods = confirmation_periods
         self.lookback_periods = lookback_periods
-        assert kind in [
-            "bullish",
-            "bearish",
-        ], "kind must be one of ['bullish', 'bearish']"
+        if kind not in self.allowed_kinds:
+            raise ValueError(f"`kind` must be one of {self.allowed_kinds}")
         self.kind = kind
 
     def _run_bullish(self, data: pd.DataFrame, lookback: int) -> pd.Series:
@@ -60,14 +57,11 @@ class MovingAverageCrossover(Strategy):
         return prior_above & below
 
     def run(self, data: pd.DataFrame) -> pd.Series:
-        assert (
-            len(data) > self.lookback_periods
-        ), f"Data length ({len(data)}) must be > lookback_periods {self.lookback_periods}"
-        assert (
-            len(data) > self.confirmation_periods
-        ), f"Data length ({len(data)}) must be > confirmation_periods {self.confirmation_periods}"
+        if len(data) <= self.lookback_periods:
+            raise ValueError(f"`data` must have length > {self.lookback_periods}")
+        if len(data) <= self.confirmation_periods:
+            raise ValueError(f"`data` must have length > {self.confirmation_periods}")
         lookback = self.lookback_periods + self.confirmation_periods
-
         if self.kind == "bullish":
             return self._run_bullish(data, lookback)
         return self._run_bearish(data, lookback)  # guaranteed by assertion in init

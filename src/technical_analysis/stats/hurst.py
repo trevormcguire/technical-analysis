@@ -3,14 +3,14 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 
-from technical_analysis.stats import linear_regression
+from technical_analysis.stats.stats import linear_regression
 
 
 def rescaled_range(arr: np.ndarray):
     """
     Calculates Hursts' Rescaled Range,
-        a measure of variability introduced by Hurst to
-        shows how variability changes over time in a series
+    a measure of variability introduced by Hurst to
+    shows how variability changes over time in a series
 
     Reference:
     --------------

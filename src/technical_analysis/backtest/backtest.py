@@ -132,9 +132,12 @@ class Backtest(object):
         self.results = kwargs.get("results", {})
 
     def __repr__(self):
-        return f"""Backtest(num_entry_conditions={len(self.entry_criteria)},
-         n_exit_conditions={len(self.exit_criteria)},
-         has_results={len(self.results) > 0})"""
+        info = {
+            "num_entry_conditions": len(self.entry_criteria),
+            "n_exit_conditions": len(self.exit_criteria),
+            "has_results": (len(self.results) > 0),
+        }
+        return f"Backtest(info={info})"
 
     def _parse_criteria(self, condition: str) -> str:
         """
@@ -202,7 +205,7 @@ class Backtest(object):
         return pd.concat(criteria_states, axis=1).all(axis=1)  # column-wise logical 'and'
 
     def calculate_results(self, data: pd.DataFrame, entry: pd.Series, exit: pd.Series) -> dict:
-        benchmark = (data.close[-1] - data.close[0]) / data.close[0]
+        benchmark = (data.close.iloc[-1] - data.close.iloc[0]) / data.close.iloc[0]
         assert entry.size == exit.size
         if self.use_next_open:
             entry = entry[:-1]

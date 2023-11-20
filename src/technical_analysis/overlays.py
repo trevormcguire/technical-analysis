@@ -3,7 +3,7 @@ from typing import Tuple
 import pandas as pd
 
 from technical_analysis.indicators import atr
-from technical_analysis.overlays.moving_average import ema
+from technical_analysis.moving_average import ema
 
 
 def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> Tuple[pd.Series]:

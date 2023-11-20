@@ -28,7 +28,7 @@ def is_gap_down(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) ->
         'min_gap_size' -> minimum size of the gap in % terms
     """
     shifted_low = low.shift(1)
-    return shifted_low > high + (high * min_gap_size)
+    return shifted_low > (high + (high * min_gap_size))
 
 
 def is_gap_up(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
@@ -36,7 +36,7 @@ def is_gap_up(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> p
     Determines whether yesterday's high was less than today's low (minus an optional threshold factor)
     """
     shifted_high = high.shift(1)
-    return shifted_high < low - (low * min_gap_size)
+    return shifted_high < (low - (low * min_gap_size))
 
 
 def is_gap(high: pd.Series, low: pd.Series, min_gap_size: float = 0.003) -> pd.Series:
@@ -183,7 +183,7 @@ def is_marubozu(
     """
     high_low_range = np.abs(high - low)
     close_open_range = np.abs(close - open)
-    return close_open_range > high_low_range * (1 - max_shadow_size)
+    return close_open_range > (high_low_range * (1 - max_shadow_size))
 
 
 def is_outside(high: pd.Series, low: pd.Series, threshold: float = 0.001, lookback: int = 1) -> pd.Series:
