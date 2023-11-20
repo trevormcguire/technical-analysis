@@ -98,7 +98,7 @@ class Backtest(object):
                  **kwargs):
 
         assert type(entry_criteria) in [list, tuple], \
-            f"Entry criteria type must be a list or tuple"
+            "Entry criteria type must be a list or tuple"
         assert type(exit_criteria) in [list, tuple], \
             "Exit criteria type must be a list or tuple"
    
@@ -193,7 +193,7 @@ class Backtest(object):
                           data: pd.DataFrame,
                           entry: pd.Series,
                           exit: pd.Series) -> dict:
-        benchmark = (data.close[-1] - data.close[0]) / data.close[0]
+        benchmark = (data.close.iloc[-1] - data.close[0]) / data.close[0]
         assert entry.size == exit.size
         if self.use_next_open:
             entry = entry[:-1]
