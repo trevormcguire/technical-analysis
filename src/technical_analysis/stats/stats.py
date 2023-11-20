@@ -1,7 +1,7 @@
-from typing import Union, Tuple
+from typing import Tuple
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def linear_regression(x: np.ndarray, y: np.ndarray = None) -> Tuple[float]:
@@ -36,8 +36,8 @@ def autocorr(x: np.ndarray) -> np.ndarray:
     Autocorrelation of x against itself
     """
     assert len(x.shape) == 1
-    result = np.correlate(x, x, mode='full')
-    return result[result.size//2:]
+    result = np.correlate(x, x, mode="full")
+    return result[result.size // 2 :]
 
 
 def autocorr_coef(x: np.ndarray, lags: tuple = (1, 200)) -> float:
@@ -47,7 +47,6 @@ def autocorr_coef(x: np.ndarray, lags: tuple = (1, 200)) -> float:
     min_lag = min(lags[0], len(x))
     max_lag = min(lags[1], len(x))
     results = []
-    for lag in range(min_lag, max_lag+1):
-        results.append(np.corrcoef(x[:-lag], x[lag:])[:,1][0])
+    for lag in range(min_lag, max_lag + 1):
+        results.append(np.corrcoef(x[:-lag], x[lag:])[:, 1][0])
     return np.array(results)
-

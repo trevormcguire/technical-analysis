@@ -29,7 +29,7 @@ class Backtest(object):
                     2. Callable;
                        An object that takes in a pandas DataFrame and returns
                        a boolean pandas Series
-                    
+
                     3. Tuple;
                        A tuple of conditions that are merged with a logical 'or' operation
                        Examples:
@@ -57,7 +57,7 @@ class Backtest(object):
         'exit_criteria'-> a list or tuple of exit criteria in same format as 'entry_criteria'
         'max_positions' -> int; maximum number of positions to hold at any given time
         'use_next_open' -> bool; use next open prices during backtest
-    
+
     Example Usage:
     -------------
         >>> def criteria_fn(data: pd.DataFrame):
@@ -69,10 +69,10 @@ class Backtest(object):
         ...     def __init__(self, column_name: str, lag: int):
         ...         self.column_name = column_name
         ...         self.lag = lag
-        ...     
+        ...
         ...     def __call__(self, data):
         ...         col = data[self.column_name]
-        ...         return col > col.shift(self.lag) 
+        ...         return col > col.shift(self.lag)
         ...
         >>> entry_criteria = ["rsi14 > 70",
         ...                   criteria_fn]  # list means logical 'and' operation
@@ -90,32 +90,40 @@ class Backtest(object):
         >>> backtest.run(spy)
 
     """
-    def __init__(self,
-                 entry_criteria: Union[list, tuple],
-                 exit_criteria: Union[list, tuple],
-                 max_positions: int = 1,
-                 use_next_open: bool = True,
-                 **kwargs):
 
-        assert type(entry_criteria) in [list, tuple], \
-            f"Entry criteria type must be a list or tuple"
-        assert type(exit_criteria) in [list, tuple], \
-            "Exit criteria type must be a list or tuple"
-   
+    def __init__(
+        self,
+        entry_criteria: Union[list, tuple],
+        exit_criteria: Union[list, tuple],
+        max_positions: int = 1,
+        use_next_open: bool = True,
+        **kwargs,
+    ):
+        assert type(entry_criteria) in [
+            list,
+            tuple,
+        ], "Entry criteria type must be a list or tuple"
+        assert type(exit_criteria) in [
+            list,
+            tuple,
+        ], "Exit criteria type must be a list or tuple"
+
         for condition in entry_criteria:
-            assert isinstance(condition, str) \
-                   or isinstance(condition, list) \
-                   or isinstance(condition, tuple) \
-                   or isinstance(condition, Callable), \
-                   "Entry criteria conditions must a list, tuple, str, or callable"
+            assert (
+                isinstance(condition, str)
+                or isinstance(condition, list)
+                or isinstance(condition, tuple)
+                or isinstance(condition, Callable)
+            ), "Entry criteria conditions must a list, tuple, str, or callable"
 
         for condition in exit_criteria:
-            assert isinstance(condition, str) \
-                   or isinstance(condition, list) \
-                   or isinstance(condition, tuple) \
-                   or isinstance(condition, Callable), \
-                   "Exit criteria conditions must a list, tuple, str, or callable"
-    
+            assert (
+                isinstance(condition, str)
+                or isinstance(condition, list)
+                or isinstance(condition, tuple)
+                or isinstance(condition, Callable)
+            ), "Exit criteria conditions must a list, tuple, str, or callable"
+
         self.entry_criteria = entry_criteria
         self.exit_criteria = exit_criteria
         self.max_positions = max_positions
@@ -133,19 +141,23 @@ class Backtest(object):
         Parses and evaluates string conditions
         """
         column, operator, value = condition.strip().split(" ")
-        assert column in self.feature_columns, \
-            f"'data' must have columns corresponding to criteria. Column '{column}' not found."
+        assert (
+            column in self.feature_columns
+        ), f"'data' must have columns corresponding to criteria. Column '{column}' not found."
         if not value.isnumeric():  # assume its a column name
-            assert value in self.feature_columns, \
-                f"'data' must have columns corresponding to criteria. Column '{value}' not found."
+            assert (
+                value in self.feature_columns
+            ), f"'data' must have columns corresponding to criteria. Column '{value}' not found."
             value = f"data['{value}']"
         condition = f"data['{column}'] {operator} {value}"
         return condition
 
-    def _apply_criteria(self,
-                        data: pd.DataFrame,
-                        exit: bool = False,
-                        criteria: Union[list, tuple] = None) -> pd.Series:
+    def _apply_criteria(
+        self,
+        data: pd.DataFrame,
+        exit: bool = False,
+        criteria: Union[list, tuple] = None,
+    ) -> pd.Series:
         """
         Recursively applies criteria specified
         Handles the cases whereby:
@@ -176,9 +188,9 @@ class Backtest(object):
             # Callable must return a single boolean pd.Series
             elif isinstance(c, Callable):
                 callable_result = c(data)
-                assert isinstance(callable_result, pd.Series) \
-                       and callable_result.dtype == bool, \
-                        "if using a callable criteria, the callable must return one pandas boolean Series"
+                assert (
+                    isinstance(callable_result, pd.Series) and callable_result.dtype == bool
+                ), "if using a callable criteria, the callable must return one pandas boolean Series"
                 criteria_states.append(callable_result)
             # string conditions are parsed and then evalulated
             else:
@@ -189,10 +201,7 @@ class Backtest(object):
             return pd.concat(criteria_states, axis=1).any(axis=1)  # column-wise logical 'or'
         return pd.concat(criteria_states, axis=1).all(axis=1)  # column-wise logical 'and'
 
-    def calculate_results(self,
-                          data: pd.DataFrame,
-                          entry: pd.Series,
-                          exit: pd.Series) -> dict:
+    def calculate_results(self, data: pd.DataFrame, entry: pd.Series, exit: pd.Series) -> dict:
         benchmark = (data.close[-1] - data.close[0]) / data.close[0]
         assert entry.size == exit.size
         if self.use_next_open:
@@ -200,7 +209,7 @@ class Backtest(object):
             exit = exit[:-1]
             action_price = data.open.to_numpy()[1:]
         else:
-            action_price = data.close.to_numpy() # backtest won't be realistic with this setting
+            action_price = data.close.to_numpy()  # backtest won't be realistic with this setting
 
         returns = []
         positions = []  # FIFO queue
@@ -211,13 +220,15 @@ class Backtest(object):
                 entry_price = positions.pop(0)
                 returns.append((price - entry_price) / entry_price)
 
-        return {"benchmark": benchmark,
-                "strategy": np.sum(returns),
-                "max_drawdown": np.min(returns),
-                "max_profit": np.max(returns),
-                "avg_return": np.mean(returns),
-                "std_return": np.std(returns),
-                "returns": returns}
+        return {
+            "benchmark": benchmark,
+            "strategy": np.sum(returns),
+            "max_drawdown": np.min(returns),
+            "max_profit": np.max(returns),
+            "avg_return": np.mean(returns),
+            "std_return": np.std(returns),
+            "returns": returns,
+        }
 
     def run(self, data: pd.DataFrame):
         if not self.feature_columns:
@@ -227,15 +238,15 @@ class Backtest(object):
         exit = self._apply_criteria(data, exit=True)
         self.results = self.calculate_results(data, entry, exit)
 
-    def plot(self, figsize: tuple = (10,6)):
+    def plot(self, figsize: tuple = (10, 6)):
         if not self.results:
             warn("Must call 'run' before plotting results.")
             return
 
         fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1,1,1)
+        ax = fig.add_subplot(1, 1, 1)
         ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-        ax.plot(np.cumsum(self.results["returns"])*100)
+        ax.plot(np.cumsum(self.results["returns"]) * 100)
         plt.title("Backtest Cumulative Return")
         plt.ylabel("Percent Return")
         plt.xlabel("Num Trades")

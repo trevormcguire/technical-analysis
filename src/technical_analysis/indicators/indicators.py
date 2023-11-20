@@ -21,21 +21,23 @@ def roc(price: pd.Series, period: int) -> pd.Series:
     return (price - shifted_price) / shifted_price
 
 
-def atr(high: pd.Series,
-        low: pd.Series,
-        close: pd.Series,
-        period: int = 14,
-        use_wilder_ma: bool = True) -> pd.Series:
+def atr(
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    period: int = 14,
+    use_wilder_ma: bool = True,
+) -> pd.Series:
     """
     Average True Range (measures volatility)
     and is the 14 day moving average of the following:
-
+    ```
         max(
             high - low
             abs(high - prev_close)
             abs(low - prev_close)
         )
-
+    ```
     """
     high_low = high - low
     high_cp = np.abs(high - close.shift(1))
@@ -63,15 +65,13 @@ def rsi(price: pd.Series, period: int, ma_fn: Callable = sma, use_wilder_ma: boo
     if use_wilder_ma:
         ma_fn = wilder_ma
 
-    delta = price.diff()[1:] #first row is nan
+    delta = price.diff()[1:]  # first row is nan
     gains, losses = delta.clip(lower=0), delta.clip(upper=0).abs()
     gains = ma_fn(gains, period)
     losses = ma_fn(losses, period)
     rs = gains / losses
     rsi = 100.0 - (100.0 / (1.0 + rs))
     rsi[:] = np.select([losses == 0, gains == 0, True], [100, 0, rsi])
-    valid_rsi = rsi[period - 1:]
-    # assert ((0 <= valid_rsi) & (valid_rsi <= 100)).all()
     return rsi
 
 
@@ -140,7 +140,7 @@ def trix(price: pd.Series, period: int = 15) -> pd.Series:
         2. Double-Smoothed EMA = 15-period EMA of Single-Smoothed EMA
         3. Triple-Smoothed EMA = 15-period EMA of Double-Smoothed EMA
         4. TRIX = 1-period percent change in Triple-Smoothed EMA
-    
+
     Reference:
     -----------
         https://school.stockcharts.com/doku.php?id=technical_indicators:trix
@@ -149,21 +149,23 @@ def trix(price: pd.Series, period: int = 15) -> pd.Series:
     return trix.pct_change(1)
 
 
-def stochastic(high: pd.Series,
-               low: pd.Series,
-               close: pd.Series,
-               period: int,
-               perc_k_smoothing: int = 0,
-               perc_d_smoothing: int = 3) -> Tuple[pd.Series]:
+def stochastic(
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    period: int,
+    perc_k_smoothing: int = 0,
+    perc_d_smoothing: int = 3,
+) -> Tuple[pd.Series]:
     """
     Stochastic Oscillator
     ----------
-    
+
     Calculation:
     ----------
         %K = (Current Close - Lowest Low)/(Highest High - Lowest Low) * 100
         %D = 3-day SMA of %K
-    
+
     Three modes:
     ----------
         1. Fast
@@ -186,18 +188,20 @@ def stochastic(high: pd.Series,
     lowest_low = low.rolling(period).min()
     highest_high = high.rolling(period).max()
 
-    perc_k = 100 * ((close - lowest_low)/(highest_high - lowest_low))
+    perc_k = 100 * ((close - lowest_low) / (highest_high - lowest_low))
     if perc_k_smoothing:
         perc_k = sma(perc_k, perc_k_smoothing)
     perc_d = sma(perc_k, perc_d_smoothing)  # the trigger line
     return perc_k, perc_d
 
 
-def macd(price: pd.Series,
-         fast_period: int = 12,
-         slow_period: int = 26,
-         signal_period: int = 9,
-         return_histogram: bool = True) -> pd.Series:
+def macd(
+    price: pd.Series,
+    fast_period: int = 12,
+    slow_period: int = 26,
+    signal_period: int = 9,
+    return_histogram: bool = True,
+) -> pd.Series:
     """
     Moving Average Convergence/Divergence (MACD)
 
@@ -206,7 +210,7 @@ def macd(price: pd.Series,
         MACD Line: (12-day EMA - 26-day EMA)
         Signal Line: 9-day EMA of MACD Line
         MACD Histogram: MACD Line - Signal Line
-    
+
     Reference:
     -----------
         https://school.stockcharts.com/doku.php?id=technical_indicators:moving_average_convergence_divergence_macd

@@ -1,7 +1,7 @@
 from typing import Tuple, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from technical_analysis.stats import linear_regression
 
@@ -25,10 +25,12 @@ def rescaled_range(arr: np.ndarray):
     return R / S
 
 
-def hurst_exp(price: pd.Series,
-              window_sizes: Tuple[int] = (50, 200),
-              window_increment: int = 10,
-              return_c: bool = False) -> Union[float, Tuple[float]]:
+def hurst_exp(
+    price: pd.Series,
+    window_sizes: Tuple[int] = (50, 200),
+    window_increment: int = 10,
+    return_c: bool = False,
+) -> Union[float, Tuple[float]]:
     """
     The Hurst Exponent calculates the degree of persistance (think 'long-term memory')
 
@@ -49,12 +51,12 @@ def hurst_exp(price: pd.Series,
 
     H ~ 0.5 - A geometric random walk (Brownian Motion)
 
-    H > 0.5 - Trending (persistent) 
+    H > 0.5 - Trending (persistent)
               The closer to 1., the stronger the trend
-    
+
     Params:
     ---------------
-        'price' -> pd.Series; 
+        'price' -> pd.Series;
         'window_sizes' -> tuple; min and max window sizes to use
         'window_increment' -> int; the 'step' in the 'window_sizes' to create windows
         'return_c' -> bool; returns H, c rather than just H
@@ -66,11 +68,11 @@ def hurst_exp(price: pd.Series,
     returns = price.pct_change()[1:]  # return over 1 period; first is nan
     series_length = len(returns)
     rs_values = []
-    window_sizes = range(window_sizes[0], window_sizes[1]+1, window_increment)
+    window_sizes = range(window_sizes[0], window_sizes[1] + 1, window_increment)
     for window_size in window_sizes:
         window_rs_vals = []
         for start in range(0, series_length, window_size):
-            window_rs_vals.append(rescaled_range([returns[start:start+window_size]]))
+            window_rs_vals.append(rescaled_range([returns[start : start + window_size]]))
         rs_values.append(np.mean(window_rs_vals))
     H, c = linear_regression(np.log(window_sizes), np.log(rs_values))
     if return_c:

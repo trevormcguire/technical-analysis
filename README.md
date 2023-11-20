@@ -123,17 +123,18 @@ The technical-analysis library comes with an extensible framework to backtest tr
 >>> # test an exponential moving average crossover strategy
 >>> spy["ema9"] = overlays.ema(spy.close, period=9)
 >>> spy["ema20"] = overlays.ema(spy.close, period=20)
->>> 
->>> backtest = Backtest(entry_criteria=[MovingAverageCrossover("sma9", "sma20", "bullish")],
-...                     exit_criteria=[MovingAverageCrossover("sma9", "sma20", "bearish")])
+>>> backtest = Backtest(entry_criteria=[MovingAverageCrossover("ema9", "ema20", "bullish")],
+...                     exit_criteria=[MovingAverageCrossover("ema9", "ema20", "bearish")],
+...                     max_positions = 1,  # can only hold one position at a time
+...                     use_next_open=True)  # use next open for entry and exit
 ...
 >>> backtest.run(spy)
 >>> backtest.results
-{'benchmark': 5.56607215019379,
- 'strategy': 1.39245960527215,
- 'max_drawdown': -0.10934780434711658,
- 'max_profit': 0.2002025942258056,
- 'avg_return': 0.01832183691147566,
- 'std_return': 0.05842269396587131,
- 'returns': [0.1079530513709391, ...]
+{'benchmark': 3.925821463626707,
+ 'strategy': 1.2970321301363634,
+ 'max_drawdown': -0.10934780434803487,
+ 'max_profit': 0.20020259422562683,
+ 'avg_return': 0.015817465001662968,
+ 'std_return': 0.057687131745236445,
+ 'returns': [0.01751003732275545, ...]
 ```

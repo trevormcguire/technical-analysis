@@ -1,14 +1,16 @@
 import numpy as np
 
 
-def random_walk(length: int,     
-                persistance: float = 0.5,
-                mean: float = 0.,
-                std: float = 1.,
-                start: float = 0.,
-                lookback_range: tuple = (2, 100),
-                distribution_size: int = 50000,
-                seed: int = None) -> np.ndarray:
+def random_walk(
+    length: int,
+    persistance: float = 0.5,
+    mean: float = 0.0,
+    std: float = 1.0,
+    start: float = 0.0,
+    lookback_range: tuple = (2, 100),
+    distribution_size: int = 50000,
+    seed: int = None,
+) -> np.ndarray:
     """
     Generate an array of values that follows a random walk
 
@@ -28,6 +30,7 @@ def random_walk(length: int,
                                size of the distribution to sample from (remember: law of large numbers)
         'seed' -> random seed
     """
+
     def get_current_trend(returns: np.ndarray, lag: int) -> int:
         cumulative_returns = np.cumsum(returns)
         return np.sign(cumulative_returns[-1] - cumulative_returns[-lag])

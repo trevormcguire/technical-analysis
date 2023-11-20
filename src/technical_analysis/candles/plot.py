@@ -4,16 +4,18 @@ import mplfinance as mpf
 import pandas as pd
 
 
-def plot(ohlc_data: pd.DataFrame,
-         kind: str = "candle",
-         volume: bool = False,
-         figsize: Tuple[int] = (8,6),
-         style: str = "yahoo",
-         **kwargs):
+def plot(
+    ohlc_data: pd.DataFrame,
+    kind: str = "candle",
+    volume: bool = False,
+    figsize: Tuple[int] = (8, 6),
+    style: str = "yahoo",
+    **kwargs,
+):
     """
     mplfinance wrapper to plot ticker data
     ----------
-    
+
     Params:
     ----------
         'ohlc_data':
@@ -63,10 +65,12 @@ def plot(ohlc_data: pd.DataFrame,
     for column in columns_to_keep:
         assert column in ohlc_data.columns, f"'ohlc_data' must include column {column}"
 
-    mpf.plot(ohlc_data[columns_to_keep],
-             type=kind,
-             volume=volume,
-             show_nontrading=False,
-             figsize=figsize,
-             style=style,
-             **kwargs)
+    mpf.plot(
+        ohlc_data[columns_to_keep],
+        type=kind,
+        volume=volume,
+        show_nontrading=False,
+        figsize=figsize,
+        style=style,
+        **kwargs,
+    )
