@@ -4,11 +4,11 @@
 
 ## Candlestick Terms:
     1. Body
-        > price action between (open, close)
+        - price action between (open, close)
     2. Upper Shadow
-        > price action between (max(open, close), high)
+        - price action between (max(open, close), high)
     3. Lower Shadow
-        > price action between (min(open, close), low)
+        - price action between (min(open, close), low)
 
 ## References:
     1. Candlestick Charting Exaplined, 3rd Edition (Morris)

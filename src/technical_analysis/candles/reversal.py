@@ -1,25 +1,28 @@
-from audioop import reverse
 import numpy as np
 import pandas as pd
 
 from technical_analysis.utils import is_bullish_trend, is_bearish_trend, get_body
-from technical_analysis.candles.single import (is_gap_down,
-                                               is_gap_up,
-                                               is_doji,
-                                               is_long_body,
-                                               negative_close,
-                                               positive_close,
-                                               body_outside_body)
+from technical_analysis.candles.single import (
+    is_gap_down,
+    is_gap_up,
+    is_doji,
+    is_long_body,
+    negative_close,
+    positive_close,
+    body_outside_body,
+)
 
 
-def dark_cloud(open: pd.Series,
-               high: pd.Series,
-               low: pd.Series,
-               close: pd.Series,
-               trend_lookback: int = 30,
-               trend_threshold: float = 0.03,
-               min_body_size: float = 0.7,
-               new_high_periods: int = 30) -> pd.Series:
+def dark_cloud(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    trend_lookback: int = 30,
+    trend_threshold: float = 0.03,
+    min_body_size: float = 0.7,
+    new_high_periods: int = 30,
+) -> pd.Series:
     """
     Bearish Reversal Pattern
 
@@ -33,18 +36,19 @@ def dark_cloud(open: pd.Series,
     """
     uptrend = is_bullish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
     bullish_long_body = is_long_body(open, high, low, close, min_body_size=min_body_size) & positive_close(open, close)
-    new_high_comparator = (high == high.rolling(new_high_periods).max())
-    close_below_midpoint = close < (high.shift(1) + low.shift(1))/2
-    return (uptrend & bullish_long_body.shift(1) & new_high_comparator & close_below_midpoint)
+    new_high_comparator = high == high.rolling(new_high_periods).max()
+    close_below_midpoint = close < (high.shift(1) + low.shift(1)) / 2
+    return uptrend & bullish_long_body.shift(1) & new_high_comparator & close_below_midpoint
 
 
-
-def bullish_engulfing(open: pd.Series,
-                      high: pd.Series,
-                      low: pd.Series,
-                      close: pd.Series,
-                      trend_lookback: int = 30,
-                      trend_threshold: float = 0.03) -> pd.Series:
+def bullish_engulfing(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    trend_lookback: int = 30,
+    trend_threshold: float = 0.03,
+) -> pd.Series:
     """
     Bullish Englufing Pattern (Reversal)
     ---------
@@ -57,15 +61,17 @@ def bullish_engulfing(open: pd.Series,
     """
     downtrend = is_bearish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
     outisde_body = body_outside_body(open, close)
-    return (downtrend & outisde_body & positive_close(open, close))
+    return downtrend & outisde_body & positive_close(open, close)
 
 
-def bearish_engulfing(open: pd.Series,
-                      high: pd.Series,
-                      low: pd.Series,
-                      close: pd.Series,
-                      trend_lookback: int = 30,
-                      trend_threshold: float = 0.03) -> pd.Series:
+def bearish_engulfing(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    trend_lookback: int = 30,
+    trend_threshold: float = 0.03,
+) -> pd.Series:
     """
     Bullish Englufing Pattern (Reversal)
     ---------
@@ -78,17 +84,19 @@ def bearish_engulfing(open: pd.Series,
     """
     uptrend = is_bullish_trend(close, lookback=trend_lookback, threshold=trend_threshold)
     outisde_body = body_outside_body(open, close)
-    return (uptrend & outisde_body & negative_close(open, close))
+    return uptrend & outisde_body & negative_close(open, close)
 
 
-def n_black_crows(open: pd.Series,
-                  high: pd.Series,
-                  low: pd.Series,
-                  close: pd.Series,
-                  n: int,
-                  lookback: int = 30,
-                  min_body_size: float = 0.75,
-                  close_threshold: float = 0.002) -> pd.Series:
+def n_black_crows(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    n: int,
+    lookback: int = 30,
+    min_body_size: float = 0.75,
+    close_threshold: float = 0.002,
+) -> pd.Series:
     """
     'n' black crows algorithm
     ---------
@@ -110,21 +118,23 @@ def n_black_crows(open: pd.Series,
     prev_upper_body = prev_upper_body.shift(1)
 
     open_in_body = (open > prev_lower_body) & (open < prev_upper_body)
-    close_near_lows = (np.abs(close - low)/low) < close_threshold
-    are_crows = (long_body_exists & open_in_body & close_near_lows)
-    for shift in list(range(n-1, 0, -1)):
+    close_near_lows = (np.abs(close - low) / low) < close_threshold
+    are_crows = long_body_exists & open_in_body & close_near_lows
+    for shift in list(range(n - 1, 0, -1)):
         are_crows = are_crows & are_crows.shift(shift)
     return uptrend & are_crows
 
 
-def n_white_soldiers(open: pd.Series,
-                     high: pd.Series,
-                     low: pd.Series,
-                     close: pd.Series,
-                     n: int,
-                     lookback: int = 30,
-                     min_body_size: float = 0.75,
-                     close_threshold: float = 0.002) -> pd.Series:
+def n_white_soldiers(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    n: int,
+    lookback: int = 30,
+    min_body_size: float = 0.75,
+    close_threshold: float = 0.002,
+) -> pd.Series:
     """
     'n' white soldiers algorithm
     ---------
@@ -146,51 +156,57 @@ def n_white_soldiers(open: pd.Series,
     prev_upper_body = prev_upper_body.shift(1)
 
     open_in_body = (open > prev_lower_body) & (open < prev_upper_body)
-    close_near_highs = (np.abs(high - close)/close) < close_threshold
-    are_crows = (long_body_exists & open_in_body & close_near_highs)
-    for shift in list(range(n-1, 0, -1)):
+    close_near_highs = (np.abs(high - close) / close) < close_threshold
+    are_crows = long_body_exists & open_in_body & close_near_highs
+    for shift in list(range(n - 1, 0, -1)):
         are_crows = are_crows & are_crows.shift(shift)
     return downtrend & are_crows
 
 
-def bullish_island(open: pd.Series,
-                   high: pd.Series,
-                   low: pd.Series,
-                   close: pd.Series,
-                   min_gap_size: float = 0.001,
-                   lookback: int = 30) -> pd.Series:
+def bullish_island(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    min_gap_size: float = 0.001,
+    lookback: int = 30,
+) -> pd.Series:
     """
     Bullish island reversal
     """
     downtrend = is_bearish_trend(close, lookback)
     down_gap = is_gap_down(high, low, min_gap_size)
-    up_gap = is_gap_up(high ,low, min_gap_size)
+    up_gap = is_gap_up(high, low, min_gap_size)
     return downtrend & down_gap.shift(1) & up_gap
 
 
-def bearish_island(open: pd.Series,
-                   high: pd.Series,
-                   low: pd.Series,
-                   close: pd.Series,
-                   min_gap_size: float = 0.001,
-                   lookback: int = 30) -> pd.Series:
+def bearish_island(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    min_gap_size: float = 0.001,
+    lookback: int = 30,
+) -> pd.Series:
     """
     Bullish island reversal
     """
     uptrend = is_bullish_trend(close, lookback)
-    up_gap = is_gap_up(high ,low, min_gap_size)
+    up_gap = is_gap_up(high, low, min_gap_size)
     down_gap = is_gap_down(high, low, min_gap_size)
     return uptrend & up_gap.shift(1) & down_gap
 
 
-def bullish_star(open: pd.Series,
-                 high: pd.Series,
-                 low: pd.Series,
-                 close: pd.Series,
-                 lookback: int = 30,
-                 min_body_size: float = 0.7,
-                 relative_threshold: float = 0.3,
-                 min_gap_size: float = 0.001) -> pd.Series:
+def bullish_star(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    lookback: int = 30,
+    min_body_size: float = 0.7,
+    relative_threshold: float = 0.3,
+    min_gap_size: float = 0.001,
+) -> pd.Series:
     """
     Morning Doji Start Reversal
 
@@ -209,14 +225,16 @@ def bullish_star(open: pd.Series,
     return downtrend & long_red.shift(2) & valid_star.shift(1) & reverse_candle & is_gap_up(high, low, min_gap_size)
 
 
-def bearish_star(open: pd.Series,
-                 high: pd.Series,
-                 low: pd.Series,
-                 close: pd.Series,
-                 lookback: int = 30,
-                 min_body_size: float = 0.7,
-                 relative_threshold: float = 0.3,
-                 min_gap_size: float = 0.001) -> pd.Series:
+def bearish_star(
+    open: pd.Series,
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+    lookback: int = 30,
+    min_body_size: float = 0.7,
+    relative_threshold: float = 0.3,
+    min_gap_size: float = 0.001,
+) -> pd.Series:
     """
     Evening Doji Start Reversal
 

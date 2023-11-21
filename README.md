@@ -24,116 +24,127 @@ Pypi link: https://pypi.org/project/technical-analysis/
 pip install technical-analysis
 ```
 
+## Overview
+This package assumes you're working with pandas dataframes. If you're not familiar with pandas, see the docs here https://pandas.pydata.org/docs/
+
 ## Technical Overlays Example Usage
 Technical Overlays are indicators placed directly on a chart.
 These include moving averages and volatility bands.
+
+### Moving Averages
 ```
->>> import pandas as pd
->>> from technical_analysis import candles
->>> from technical_analysis import overlays
->>> from technical_analysis import indicators
->>>
->>> spy = pd.read_csv(filepath)
+>>> from technical_analysis import moving_average
+>>> # simple moving average
+>>> df["sma9"] = moving_average.sma(df.close, 9)
 >>>
 >>> # exponentially-weighted moving average
->>> spy["ema9"] = overlays.ema(spy.close, 9)
->>> spy["ema20"] = overlays.ema(spy.close, 20)
->>> spy["ema50"] = overlays.ema(spy.close, 50)
+>>> df["ema9"] = moving_average.ema(df.close, period=9)
 >>>
 >>> # triangular moving average
->>> spy["tma9"] = overlays.tma(spy.close, 9)
->>> spy["tma20"] = overlays.tma(spy.close, 20)
->>> spy["tma50"] = overlays.tma(spy.close, 50)
+>>> df["tma9"] = moving_average.tma(df.close, 9)
 >>>
 >>> # linearly-weighted moving average
->>> spy["lwma9"] = overlays.lwma(spy.close, 9)
->>> spy["lwma20"] = overlays.lwma(spy.close, 20)
->>> spy["lwma50"] = overlays.lwma(spy.close, 50)
+>>> df["lwma9"] = moving_average.lwma(df.close, 9)
 >>>
 >>> # kaufman adaptive moving average
->>> spy["kama9"] = overlays.kama(spy.close, 9, min_smoothing_constant=3, max_smoothing_constant=30)
->>> spy["kama20"] = overlays.kama(spy.close, 20, min_smoothing_constant=3, max_smoothing_constant=30)
->>> spy["kama50"] = overlays.kama(spy.close, 50, min_smoothing_constant=3, max_smoothing_constant=30)
+>>> df["kama9"] = moving_average.kama(df.close, 9, min_smoothing_constant=3, max_smoothing_constant=30)
 >>>
+>>> # wilder moving average
+>>> df["wilder9"] = moving_average.wilder_ma(df.close, 9)
+```
+
+### Bands
+```
+>>> from technical_analysis import overlays
 >>> # bollinger bands
->>> spy["bband_lower"], spy["bband_upper"] = overlays.bbands(spy.close, period=20)
+>>> df["bband_lower"], df["bband_upper"] = overlays.bbands(df.close, period=20)
 >>>
 >>> # donchian bands
->>> spy["dband_lower"], spy["dband_upper"] = overlays.dbands(spy.close, period=20)
+>>> df["dband_lower"], df["dband_upper"] = overlays.dbands(df.close, period=20)
 >>>
 >>> # keltner bands
->>> spy["kband_lower"], spy["kband_upper"] = overlays.kbands(spy.high, spy.low, spy.close, period=20)
-
+>>> df["kband_lower"], df["kband_upper"] = overlays.kbands(df.high, df.low, df.close, period=20)
 ```
 
 ## Technical Indicators Example Usage
 ```
+>>> from technical_analysis import indicators
 >>> # average true range
->>> spy["atr"] = indicators.atr(spy.high, spy.low, spy.close, period=14)
+>>> df["atr"] = indicators.atr(df.high, df.low, df.close, period=14)
 >>>
 >>> # relative strength index
->>> spy["rsi"] = indicators.rsi(spy.close, period=14)
+>>> df["rsi"] = indicators.rsi(df.close, period=14)
 >>>
 >>> # Williams' %R
->>> spy["perc_r"] = indicators.perc_r(spy.high, spy.low, spy.close, period=14)
+>>> df["perc_r"] = indicators.perc_r(df.high, df.low, df.close, period=14)
 >>>
 >>> # true strength index
->>> spy["tsi"] = indicators.tsi(spy.close, period1=25, period2=13)
+>>> df["tsi"] = indicators.tsi(df.close, period1=25, period2=13)
 >>>
 >>> # TRIX
->>> spy["trix"] = indicators.trix(spy.close, period=15)
+>>> df["trix"] = indicators.trix(df.close, period=15)
 >>>
 >>> # stochastic %k, %d (fast, slow, or full)
->>> spy["stoch_k"], spy["stoch_d"] = indicators.stochastic(spy.high, spy.low, spy.close, period=14, perc_k_smoothing=3)
+>>> df["stoch_k"], df["stoch_d"] = indicators.stochastic(df.high, df.low, df.close, period=14, perc_k_smoothing=3)
 >>>
 >>> # macd histogram
->>> spy["macd_histogram"] = indicators.macd(spy.close, return_histogram=True)
+>>> df["macd_histogram"] = indicators.macd(df.close, return_histogram=True)
 ```
 
 ## Candlestick Pattern Recognition Example Usage
 ```
->>> spy["gap_down"] = candles.is_gap_down(spy.high, spy.low, min_gap_size=0.003)
->>> spy["gap_up"] = candles.is_gap_down(spy.high, spy.low, min_gap_size=0.003)
->>> spy["long_body"] = candles.is_long_body(spy.open, spy.high, spy.low, spy.close, min_body_size=0.7)
->>> spy["doji"] = candles.is_doji(spy.open, spy.high, spy.low, spy.close, relative_threshold=0.1)
->>> spy["outside"] = candles.is_outside(spy.high, spy.low)
->>> spy["inside"] = candles.is_inside(spy.high, spy.low)
->>> spy["spinning_top"] = candles.spinning_top(spy.open, spy.high, spy.low, spy.close)
->>> spy["marubozu"] = candles.is_marubozu(spy.open, spy.high, spy.low, spy.close, max_shadow_size=0.2)
->>> spy["dark_cloud"] = candles.dark_cloud(spy.open,
-...                                        spy.high,
-...                                        spy.low,
-...                                        spy.close,
-...                                        min_body_size=0.65,
-...                                        new_high_periods=30)
-...
->>> spy["bullish_engulfing"] = candles.bullish_engulfing(spy.open, spy.high, spy.low, spy.close)
->>> spy["bearish_engulfing"] = candles.bearish_engulfing(spy.open, spy.high, spy.low, spy.close)
-
+>>> from technical_analysis import candles
+>>> df["gap_down"] = candles.is_gap_down(df.high, df.low, min_gap_size=0.003)
+>>> df["gap_up"] = candles.is_gap_down(df.high, df.low, min_gap_size=0.003)
+>>> df["long_body"] = candles.is_long_body(df.open, df.high, df.low, df.close, min_body_size=0.7)
+>>> df["doji"] = candles.is_doji(df.open, df.high, df.low, df.close, relative_threshold=0.1)
+>>> df["outside"] = candles.is_outside(df.high, df.low)
+>>> df["inside"] = candles.is_inside(df.high, df.low)
+>>> df["spinning_top"] = candles.spinning_top(df.open, df.high, df.low, df.close)
+>>> df["marubozu"] = candles.is_marubozu(df.open, df.high, df.low, df.close, max_shadow_size=0.2)
+>>> df["bullish_engulfing"] = candles.bullish_engulfing(df.open, df.high, df.low, df.close)
+>>> df["bearish_engulfing"] = candles.bearish_engulfing(df.open, df.high, df.low, df.close)
 ```
 
 ## Automatic Backtesting Example Usage
 The technical-analysis library comes with an extensible framework to backtest trading strategies.
 ```
->>> import pandas as pd
 >>> from technical_analysis.backtest import Backtest
 >>> from technical_analysis.backtest.strategy import MovingAverageCrossover
+>>> from technical_analysis import overlays
 >>>
->>> spy = pd.read_csv(filepath)
 >>> # test an exponential moving average crossover strategy
->>> spy["ema9"] = overlays.ema(spy.close, period=9)
->>> spy["ema20"] = overlays.ema(spy.close, period=20)
->>> 
->>> backtest = Backtest(entry_criteria=[MovingAverageCrossover("sma9", "sma20", "bullish")],
-...                     exit_criteria=[MovingAverageCrossover("sma9", "sma20", "bearish")])
-...
->>> backtest.run(spy)
+>>> df["ema9"] = overlays.ema(df.close, period=9)
+>>> df["ema20"] = overlays.ema(df.close, period=20)
+>>> df = df.dropna().reset_index(drop=True)
+>>> entry_criteria=[MovingAverageCrossover("ema9", "ema20", "bullish")]
+>>> exit_criteria=[MovingAverageCrossover("ema9", "ema20", "bearish")]
+>>> backtest = Backtest(entry_criteria, exit_criteria, max_positions=1, use_next_open=True)
+>>> backtest.run(df)
 >>> backtest.results
-{'benchmark': 5.56607215019379,
- 'strategy': 1.39245960527215,
- 'max_drawdown': -0.10934780434711658,
- 'max_profit': 0.2002025942258056,
- 'avg_return': 0.01832183691147566,
- 'std_return': 0.05842269396587131,
- 'returns': [0.1079530513709391, ...]
+{'benchmark': 3.925821463626707,
+ 'strategy': 1.2970321301363634,
+ 'max_drawdown': -0.10934780434803487,
+ 'max_profit': 0.20020259422562683,
+ 'avg_return': 0.015817465001662968,
+ 'std_return': 0.057687131745236445,
+ 'returns': [0.01751003732275545, ...]}
+```
+
+## Timeseries Analysis
+The technical-analysis library comes with useful timeseries analysis tools.
+```
+>>> from technical_analysis.stats import autocorr_coef, period
+>>> # auto-correlation
+>>> corr = autocorr_coef(df.close.pct_change())
+>>> np.argsort(corr)[::-1][:10]
+array([199,  62,  72,  71,  70,  69,  68,  67,  66,  65])
+>>>
+>>> # periodicity
+>>> period(df.close, top_n=10)
+array([ 1,  2,  5,  4,  3,  7, 16, 10, 25, 38])
+>>>
+>>> # hurst exponent
+>>> hurst_exp(df.close)
+0.3238867311092554
 ```

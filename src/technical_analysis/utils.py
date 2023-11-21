@@ -35,7 +35,7 @@ def is_bullish_trend(price: pd.Series, lookback: int, threshold: float = None) -
             > defaults to (lookback/1000)
     """
     if threshold is None:
-        threshold = (lookback/1000)
+        threshold = lookback / 1000
     else:
         threshold = max(threshold, threshold * -1)
     return get_trend(price, lookback) > threshold
@@ -54,7 +54,7 @@ def is_bearish_trend(price: pd.Series, lookback: int, threshold: float = None) -
             > defaults to (lookback/1000) * -1
     """
     if threshold is None:
-        threshold = (lookback/1000) * -1
+        threshold = (lookback / 1000) * -1
     else:
         threshold = min(threshold, threshold * -1)
     return get_trend(price, lookback) < threshold
@@ -66,3 +66,11 @@ def is_new_high(price: pd.Series, lookback: int):
 
 def is_new_low(price: pd.Series, lookback: int):
     return price == price.rolling(lookback).min()
+
+
+def log_return(price: pd.Series) -> pd.Series:
+    return np.log1p(price.pct_change())
+
+
+def cum_pct_change(price: pd.Series) -> pd.Series:
+    return price.pct_change().cumsum()
