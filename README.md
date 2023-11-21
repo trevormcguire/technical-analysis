@@ -25,7 +25,7 @@ pip install technical-analysis
 ```
 
 ## Overview
-This package works well with pandas dataframes. If you're not familiar with pandas, see their docs here https://pandas.pydata.org/docs/
+This package assumes you're working with pandas dataframes. If you're not familiar with pandas, see the docs here https://pandas.pydata.org/docs/
 
 ## Technical Overlays Example Usage
 Technical Overlays are indicators placed directly on a chart.
@@ -129,4 +129,22 @@ The technical-analysis library comes with an extensible framework to backtest tr
  'avg_return': 0.015817465001662968,
  'std_return': 0.057687131745236445,
  'returns': [0.01751003732275545, ...]}
+```
+
+## Timeseries Analysis
+The technical-analysis library comes with useful timeseries analysis tools.
+```
+>>> from technical_analysis.stats import autocorr_coef, period
+>>> # auto-correlation
+>>> corr = autocorr_coef(df.close.pct_change())
+>>> np.argsort(corr)[::-1][:10]
+array([199,  62,  72,  71,  70,  69,  68,  67,  66,  65])
+>>>
+>>> # periodicity
+>>> period(df.close, top_n=10)
+array([ 1,  2,  5,  4,  3,  7, 16, 10, 25, 38])
+>>>
+>>> # hurst exponent
+>>> hurst_exp(df.close)
+0.3238867311092554
 ```
