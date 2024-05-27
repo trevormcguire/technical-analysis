@@ -54,9 +54,9 @@ class Backtest(object):
                                 AND sma9 is less than sma20,
                                 AND the result of the function some_callable_fn'
 
-        'exit_criteria'-> a list or tuple of exit criteria in same format as 'entry_criteria'
-        'max_positions' -> int; maximum number of positions to hold at any given time
-        'use_next_open' -> bool; use next open prices during backtest
+        'exit_criteria': a list or tuple of exit criteria in same format as 'entry_criteria'
+        'max_positions': int; maximum number of positions to hold at any given time
+        'use_next_open': bool; use next open prices during backtest
 
     Example Usage:
     -------------
@@ -230,6 +230,7 @@ class Backtest(object):
             "max_profit": np.max(returns),
             "avg_return": np.mean(returns),
             "std_return": np.std(returns),
+            "num_trades": len(returns),
             "returns": returns,
         }
 
