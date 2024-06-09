@@ -72,8 +72,8 @@ def is_new_low(price: pd.Series, lookback: int):
     return price == price.rolling(lookback).min()
 
 
-def log_return(price: pd.Series) -> pd.Series:
-    return np.log1p(price.pct_change())
+# def log_return(price: pd.Series) -> pd.Series:
+#     return np.log1p(price.pct_change())
 
 
 def cum_pct_change(price: pd.Series) -> pd.Series:
