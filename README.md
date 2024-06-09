@@ -8,12 +8,13 @@ This package aims to provide an extensible framework for working with various TA
 
 The Technical Analysis Library is still in its early days, but already has the following:
 
-1. Recognition for 30+ Candlestick Patterns
-3. 10+ technical indicators
-4. 10+ moving average types (including adaptive)
-5. Technical overlays
-6. Automated backtests and strategies
-7. Statistical tools to analyze price action
+1. Recognition for Candlestick Patterns
+2. Technical indicators
+3. Technical overlays
+4. Moving averages (including adaptive)
+5. Automated backtests and strategies
+6. Tools for timeseries analysis
+7. Artificial data generation
 8. A highly extensible framework to create custom indicators, backtests, and strategies
 
 

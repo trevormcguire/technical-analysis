@@ -4,6 +4,10 @@ import numpy as np
 import pandas as pd
 
 
+def log_returns(price: pd.Series) -> pd.Series:
+    return np.log(price / price.shift(1))
+
+
 def get_body(open: pd.Series, close: pd.Series) -> Tuple[pd.Series]:
     """
     gets upper and lower bounds of candle body, direction-agnostic
@@ -68,8 +72,8 @@ def is_new_low(price: pd.Series, lookback: int):
     return price == price.rolling(lookback).min()
 
 
-def log_return(price: pd.Series) -> pd.Series:
-    return np.log1p(price.pct_change())
+# def log_return(price: pd.Series) -> pd.Series:
+#     return np.log1p(price.pct_change())
 
 
 def cum_pct_change(price: pd.Series) -> pd.Series:

@@ -2,7 +2,7 @@ from typing import Tuple
 
 import pandas as pd
 
-from technical_analysis.indicators import atr
+from technical_analysis._common import _atr, _bbands, _dbands
 from technical_analysis.moving_average import ema
 
 
@@ -25,33 +25,8 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> Tuple[pd.
     return r1, r2, s1, s2
 
 
-def bbands(price: pd.Series, period: int = 20, num_std: int = 2, ma_type: str = "sma") -> Tuple[pd.Series]:
-    """
-    Bollinger Bands Calculation
-
-    1. Middle Band = 20-day simple moving average (SMA)
-    2. Upper Band = 20-day SMA + (20-day standard deviation of price x 2)
-    3. Lower Band = 20-day SMA - (20-day standard deviation of price x 2)
-    """
-    std = price.rolling(period).std()
-    if ma_type == "sma":
-        ma = price.rolling(period).mean()
-    elif ma_type == "ema":
-        ma = ema(price, period=period)
-    else:
-        raise NotImplementedError
-    upper_band = ma + (std * num_std)
-    lower_band = ma - (std * num_std)
-    return lower_band, upper_band
-
-
-def dbands(price: pd.Series, period: int = 20) -> Tuple[pd.Series]:
-    """
-    Donchian Bands Calculation
-    """
-    upper_donchian = price.rolling(period).max()
-    lower_donchian = price.rolling(period).min()
-    return lower_donchian, upper_donchian
+bbands = _bbands
+dbands = _dbands
 
 
 def kbands(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) -> Tuple[pd.Series]:
@@ -67,20 +42,21 @@ def kbands(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) 
     Reference: https://school.stockcharts.com/doku.php?id=technical_indicators:keltner_channels
     """
     _ema = ema(close, period)
-    _atr = atr(high, low, close, period=10)
-    factor = _atr * 2
+    avg_true_range = _atr(high, low, close, period=10)
+    factor = avg_true_range * 2
     lower_keltner = _ema - factor
     upper_keltner = _ema + factor
     return lower_keltner, upper_keltner
+
 
 def chandalier_exit(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 22) -> Tuple[pd.Series]:
     """
     Chandalier Exit -- Accounts for volatility, defined by Average True Range
     https://school.stockcharts.com/doku.php?id=technical_indicators:chandelier_exit
     """
-    _atr = atr(high=high, low=low, close=close, period=period)
-    long = high.rolling(period).max() - _atr * 3
-    short = low.rolling(period).min() + _atr * 3
+    avg_true_range = _atr(high=high, low=low, close=close, period=period)
+    long = high.rolling(period).max() - avg_true_range * 3
+    short = low.rolling(period).min() + avg_true_range * 3
     return short, long
 
 
