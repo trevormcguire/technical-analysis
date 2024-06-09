@@ -8,13 +8,35 @@ from technical_analysis.moving_average import ema, sma, wilder_ma
 from technical_analysis.utils import log_returns
 
 
-
 def volatility(price: pd.Series, period: int, use_log: bool = True) -> pd.Series:
     if use_log:
         price = log_returns(price)
     else:
         price = price.pct_change()
     return price.rolling(period).std()
+
+
+def true_range(
+    high: pd.Series,
+    low: pd.Series,
+    close: pd.Series,
+) -> pd.Series:
+    """
+    True Range
+    -----------
+        ```
+            max(
+                high - low
+                abs(high - prev_close)
+                abs(low - prev_close)
+            )
+        ```
+    """
+    high_low = high - low
+    high_cp = np.abs(high - close.shift())
+    low_cp = np.abs(low - close.shift())
+    df = pd.concat([high_low, high_cp, low_cp], axis=1)
+    return np.max(df, axis=1)
 
 
 def atr(
@@ -25,26 +47,17 @@ def atr(
     use_wilder_ma: bool = True,
 ) -> pd.Series:
     """
-    Average True Range (measures volatility)
-    and is the 14 day moving average of the following:
-    ```
-        max(
-            high - low
-            abs(high - prev_close)
-            abs(low - prev_close)
-        )
-    ```
+    Average True Range
+    --------------------
+    Measures volatility by taking the 14 day moving average `true_range`
+
     """
-    high_low = high - low
-    high_cp = np.abs(high - close.shift(1))
-    low_cp = np.abs(low - close.shift())
-    df = pd.concat([high_low, high_cp, low_cp], axis=1)
-    true_range = np.max(df, axis=1)
+    tr = true_range(high=high, low=low, close=close)
     if use_wilder_ma:
-        average_true_range = wilder_ma(true_range, period)
+        average_tr = wilder_ma(tr, period)
     else:
-        average_true_range = sma(true_range, period)
-    return average_true_range
+        average_tr = sma(tr, period)
+    return average_tr
 
 
 def rsi(price: pd.Series, period: int, ma_fn: Callable = sma, use_wilder_ma: bool = True) -> pd.Series:
@@ -240,8 +253,118 @@ def macd(
 def rvol(volume: pd.Series, period: int) -> pd.Series:
     """
     Relative Volume
-    
+
     `RVOL = current volume / average volume over the look-back period`
     https://school.stockcharts.com/doku.php?id=technical_indicators:rvol
     """
     return volume / volume.rolling(period).mean()
+
+
+def positive_directional_movement(high: pd.Series) -> pd.Series:
+    return np.clip(high.diff(), a_min=0, a_max=None)
+
+
+def negative_directional_movement(low: pd.Series) -> pd.Series:
+    return np.clip(low.diff(), a_min=None, a_max=0)
+
+
+def directional_movement(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 10) -> tuple[pd.Series]:
+    """
+    Directional Movement
+    ------------
+    Measures "trending quality" of the market, as used by Wilder. It is the largest part of today's range
+    that is *outside* yesterday's range.
+
+    - +DM = H[t] - H[t-1]
+    - -DM = L[t] - L[t-1]
+
+    Reference: CMT Level III Cirriculum (2020); page 205
+    """
+    # calculate +DM (PDM)
+    pdm = positive_directional_movement(high=high)
+    # calculate -DM (MDM)
+    mdm = negative_directional_movement(low=low)
+    # calculate true range
+    tr = true_range(high=high, low=low, close=close)
+
+    pdm_smoothed = wilder_ma(pdm, period=period)
+    mdm_smoothed = wilder_ma(mdm, period=period)
+    tr_smoothed = wilder_ma(tr, period=period)
+
+    pdm_indicator = pdm_smoothed / tr_smoothed
+    pdm_indicator = ((1 / period) * pdm_indicator.shift()) + pdm_indicator
+
+    mdm_indicator = mdm_smoothed / tr_smoothed
+    mdm_indicator = ((1 / period) * mdm_indicator.shift()) + mdm_indicator
+
+    tr_smoothed_indicator = ((1 / period) * tr_smoothed.shift()) + tr_smoothed
+    return pdm_indicator, mdm_indicator, tr_smoothed_indicator
+
+
+def directional_indicators(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 10) -> tuple[pd.Series]:
+    """
+    Directional Indicators
+    --------------
+    Calculates Positive and Minus Directional Indicators
+
+    Reference: CMT Level III Cirriculum (2020); page 205.
+    """
+    pdm, mdm, tr = directional_movement(high=high, low=low, close=close, period=period)
+    pdi = pdm / tr
+    mdi = mdm / tr
+    return pdi, mdi
+
+
+def true_directional_movement(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 10) -> pd.Series:
+    """
+    True Directional Movement Index (DX)
+    -----------
+    The difference betweeen the Positive Directional Indicator and the Minus Directional Indicator.
+    When an upward trend is sustaineed, MDI will be zero, so the DX grows.
+
+    Reference: CMT Level III Cirriculum (2020); page 206.
+    """
+    pdi, mdi = directional_indicators(high=high, low=low, close=close, period=period)
+    return 100 * (np.abs(pdi - mdi) / pdi + mdi)
+
+
+def adx(high: pd.Series, low: pd.Series, close: pd.Series, dx_period: int = 10, period: int = 10) -> pd.Series:
+    """
+    Average Directional Movement Index
+    --------------
+
+    Reference: CMT Level III Cirriculum (2020); page 206.
+    """
+    dxi = true_directional_movement(high=high, low=low, close=close, period=dx_period)
+    return wilder_ma(dxi, peeriod=period)
+
+
+def adx_rating(high: pd.Series, low: pd.Series, close: pd.Series, dx_period: int = 10, period: int = 10) -> pd.Series:
+    """
+    Average Directional Movement Index Rating (ADXR)
+    ------------
+    Takes extreme variance of ADX into account.
+    The distance between ADX and ADXR measrues overbought/oversold conditions.
+
+    Reference: CMT Level III Cirriculum (2020); page 206.
+    """
+    average_dx = adx(high=high, low=low, close=close, dx_period=dx_period, period=period)
+    return (average_dx + average_dx.shift(period)) / 2
+
+
+def efficiency_ratio(price: pd.Series, period: int) -> pd.Series:
+    """
+    Efficiency Ratio
+    ----------
+    Measures noise in the market over a given number of periods.
+    Calculated as the absolute value of the net price change divided by
+    the sum of the absoluet individual price changes over the same period.
+    NOTE: Lower values indicate more noise.
+
+    Reference: CMT Level III Cirriculum (2020); page 210.
+    """
+
+    def _er(p: pd.Series) -> float:
+        return abs(p.iloc[-1] - p.iloc[0]) / p.diff().abs().sum()
+
+    return price.rolling(period).apply(_er)
