@@ -8,11 +8,6 @@ from technical_analysis.moving_average import ema, sma, wilder_ma
 from technical_analysis.utils import log_returns
 
 
-def std(price: pd.Series, period: int) -> pd.Series:
-    """
-    Rolling standard deviation
-    """
-    return price.rolling(period).std()
 
 def volatility(price: pd.Series, period: int, use_log: bool = True) -> pd.Series:
     if use_log:
