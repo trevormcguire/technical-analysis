@@ -25,18 +25,23 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> Tuple[pd.
     return r1, r2, s1, s2
 
 
-def bbands(price: pd.Series, period: int = 20, num_std: int = 2) -> Tuple[pd.Series]:
+def bbands(price: pd.Series, period: int = 20, num_std: int = 2, ma_type: str = "sma") -> Tuple[pd.Series]:
     """
     Bollinger Bands Calculation
-    
+
     1. Middle Band = 20-day simple moving average (SMA)
-    2. Upper Band = 20-day SMA + (20-day standard deviation of price x 2) 
+    2. Upper Band = 20-day SMA + (20-day standard deviation of price x 2)
     3. Lower Band = 20-day SMA - (20-day standard deviation of price x 2)
     """
     std = price.rolling(period).std()
-    sma = price.rolling(period).mean()
-    upper_band = sma + (std * num_std)
-    lower_band = sma - (std * num_std)
+    if ma_type == "sma":
+        ma = price.rolling(period).mean()
+    elif ma_type == "ema":
+        ma = ema(price, period=period)
+    else:
+        raise NotImplementedError
+    upper_band = ma + (std * num_std)
+    lower_band = ma - (std * num_std)
     return lower_band, upper_band
 
 
@@ -69,12 +74,7 @@ def kbands(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) 
     return lower_keltner, upper_keltner
 
 
-def chandalier_exit(
-    high: pd.Series,
-    low: pd.Series,
-    close: pd.Series,
-    period: int = 22
-) -> Tuple[pd.Series]:
+def chandalier_exit(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 22) -> Tuple[pd.Series]:
     """
     Chandalier Exit -- Accounts for volatility, defined by Average True Range
     https://school.stockcharts.com/doku.php?id=technical_indicators:chandelier_exit
@@ -92,7 +92,7 @@ def ichimoku_clouds(
     base_period: int = 26,
     span_b_period: int = 52,
     span_lag: int = 26,
-    return_all: bool = True
+    return_all: bool = True,
 ) -> Tuple[pd.Series]:
     """
     ## Ichimoku Clouds
@@ -125,5 +125,6 @@ def ichimoku_clouds(
     if return_all:
         return conversion_line, base_line, span_a, span_b
     return span_a, span_b
+
 
 ichimoku = ichimoku_clouds  # alias

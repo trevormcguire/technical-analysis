@@ -13,13 +13,13 @@ class MovingAverageCrossover(Strategy):
     """
     Parameters:
     ------------
-    `ma1_name`: str; column name of faster moving average
-    `ma2_name`: str; column name of slower moving average
-    `lookback_periods`: int; number of periods to look back to validate crossover
-    `confirmation_periods`: -> int; number of consecutive periods where
+    - `ma1_name`: str; column name of faster moving average
+    - `ma2_name`: str; column name of slower moving average
+    - `lookback_periods`: int; number of periods to look back to validate crossover
+    - `confirmation_periods`: -> int; number of consecutive periods where
         - ma1 must be > ma2 if kind=='bullish'
         - ma2 must be < ma1 if kind=='bearish'
-    `kind`: str; one of ['bullish', 'bearish']
+    - `kind`: str; one of ['bullish', 'bearish']
     """
 
     allowed_kinds = ["bullish", "bearish"]
@@ -42,11 +42,13 @@ class MovingAverageCrossover(Strategy):
         self.kind = kind
 
     def _run_bullish(self, data: pd.DataFrame, lookback: int) -> pd.Series:
+        # faster > slower
         above = data[self.ma1_name] > data[self.ma2_name]
         for p in range(self.confirmation_periods):
             _shift = p + 1
             above = above & (data[self.ma1_name].shift(_shift) > data[self.ma2_name].shift(_shift))
 
+        # faster < slower
         prior_below = data[self.ma1_name].shift(lookback) < data[self.ma2_name].shift(lookback)
         return prior_below & above
 
