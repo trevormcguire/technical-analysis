@@ -73,7 +73,6 @@ def kbands(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) 
     upper_keltner = _ema + factor
     return lower_keltner, upper_keltner
 
-
 def chandalier_exit(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 22) -> Tuple[pd.Series]:
     """
     Chandalier Exit -- Accounts for volatility, defined by Average True Range
