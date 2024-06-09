@@ -3,7 +3,9 @@ from typing import Callable, Tuple
 import numpy as np
 import pandas as pd
 
+from technical_analysis.overlays import bbands, dbands
 from technical_analysis.moving_average import ema, sma, wilder_ma
+from technical_analysis.utils import log_returns
 
 
 def std(price: pd.Series, period: int) -> pd.Series:
@@ -12,13 +14,12 @@ def std(price: pd.Series, period: int) -> pd.Series:
     """
     return price.rolling(period).std()
 
-
-def roc(price: pd.Series, period: int) -> pd.Series:
-    """
-    Acceleration (rate of change)
-    """
-    shifted_price = price.shift(period)
-    return (price - shifted_price) / shifted_price
+def volatility(price: pd.Series, period: int, use_log: bool = True) -> pd.Series:
+    if use_log:
+        price = log_returns(price)
+    else:
+        price = price.pct_change()
+    return price.rolling(period).std()
 
 
 def atr(
@@ -93,6 +94,24 @@ def perc_r(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd
     lowest_low = low.rolling(period).min()
     highest_high = high.rolling(period).max()
     return (highest_high - close) / (highest_high - lowest_low)
+
+
+def perc_b(price: pd.Series, period: int = 20, num_std: int = 2) -> pd.Series:
+    """
+    %B measures a security's price in relation to the Bollinger Bands
+    https://school.stockcharts.com/doku.php?id=technical_indicators:bollinger_band_perce
+    %B = (Price - Lower Band) / (Upper Band - Lower Band)
+    """
+    lower_band, upper_band = bbands(price, period=period, num_std=num_std)
+    return (price - lower_band) / (upper_band - lower_band)
+
+
+def perc_d(price: pd.Series, period: int = 20) -> pd.Series:
+    """
+    %D measures a security's price in relation to the Donchian Bands
+    """
+    lower_band, upper_band = dbands(price, period=period)
+    return (price - lower_band) / (upper_band - lower_band)
 
 
 def tsi(price: pd.Series, period1: int = 25, period2: int = 13) -> pd.Series:
@@ -221,3 +240,13 @@ def macd(
     if return_histogram:
         return macd_line - signal_line
     return signal_line
+
+
+def rvol(volume: pd.Series, period: int) -> pd.Series:
+    """
+    Relative Volume
+    
+    `RVOL = current volume / average volume over the look-back period`
+    https://school.stockcharts.com/doku.php?id=technical_indicators:rvol
+    """
+    return volume / volume.rolling(period).mean()
