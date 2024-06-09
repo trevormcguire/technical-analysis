@@ -24,6 +24,7 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> Tuple[pd.
     s2 = P - (high - low)
     return r1, r2, s1, s2
 
+
 bbands = _bbands
 dbands = _dbands
 

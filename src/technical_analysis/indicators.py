@@ -15,6 +15,7 @@ def volatility(price: pd.Series, period: int, use_log: bool = True) -> pd.Series
         price = price.pct_change()
     return price.rolling(period).std()
 
+
 true_range = _true_range
 atr = _atr
 
