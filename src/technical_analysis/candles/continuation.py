@@ -1,19 +1,14 @@
 import pandas as pd
 
-from technical_analysis.utils import (
-    is_bearish_trend,
-    is_bullish_trend,
-    is_new_high,
-    is_new_low,
-)
 from technical_analysis.candles.single import (
-    is_long_body,
+    body_inside_shadow,
     is_gap_down,
     is_gap_up,
-    positive_close,
+    is_long_body,
     negative_close,
-    body_inside_shadow,
+    positive_close,
 )
+from technical_analysis.utils import is_bearish_trend, is_bullish_trend, is_new_high, is_new_low
 
 
 def rising_n(

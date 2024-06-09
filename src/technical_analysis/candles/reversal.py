@@ -1,16 +1,16 @@
 import numpy as np
 import pandas as pd
 
-from technical_analysis.utils import is_bullish_trend, is_bearish_trend, get_body
 from technical_analysis.candles.single import (
+    body_outside_body,
+    is_doji,
     is_gap_down,
     is_gap_up,
-    is_doji,
     is_long_body,
     negative_close,
     positive_close,
-    body_outside_body,
 )
+from technical_analysis.utils import get_body, is_bearish_trend, is_bullish_trend
 
 
 def dark_cloud(
