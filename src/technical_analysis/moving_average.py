@@ -31,14 +31,14 @@ def ema(price: pd.Series, period: int) -> pd.Series:
     return transformed_series
 
 
-def n_smoothed_ema(price: pd.Series, period: Union[int, tuple], n_iterations: int) -> pd.Series:
+def n_smoothed_ema(price: pd.Series, period: Union[int, tuple], n: int) -> pd.Series:
     """
     Variably Smoothed EMA
     """
     if isinstance(period, tuple):
-        assert len(period) == n_iterations
+        assert len(period) == n
     else:
-        period = [period] * n_iterations
+        period = [period] * n
     res = price.copy()
     for p in period:
         res = ema(res, p)
