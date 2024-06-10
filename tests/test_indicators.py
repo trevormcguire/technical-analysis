@@ -27,3 +27,13 @@ def test_perc_d(input_df, perc_d_results):
     d = indicators.perc_d(input_df["close"], period=3)
     d = d.dropna().reset_index(drop=True).round(2)
     assert (d == perc_d_results).all()
+
+
+@pytest.fixture
+def rvol_results() -> pd.Series:
+    return pd.Series([1.71])  # 6 / ((1 + 2 + 3 + 4 + 5 + 6) / 6)
+
+
+def test_rvol(input_df, rvol_results):
+    result = indicators.rvol(input_df["volume"], period=6).dropna().reset_index(drop=True).round(2)
+    assert (result == rvol_results).all()
