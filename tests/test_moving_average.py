@@ -19,6 +19,39 @@ def test_sma(input_series, sma_result):
     assert (result == sma_result).all()
 
 
+@pytest.fixture
+def ema_result() -> pd.Series:
+    return pd.Series(
+        [
+            0.67,  # weighted avg between (0, 1)
+            1.56,
+            2.52,
+            3.51,
+            4.5,
+            5.5,
+            6.5,
+            7.5,
+            8.5,
+            9.5,
+            10.5,
+            11.5,
+            12.5,
+            13.5,
+            14.5,
+            15.5,
+            16.5,
+            17.5,
+            18.5,
+            19.5,
+        ]
+    )
+
+
+def test_ema(input_series, ema_result):
+    result = ma.ema(price=input_series, period=2).round(2).dropna().reset_index(drop=True)
+    assert (result == ema_result).all()
+
+
 def test_n_smoothed_ema(input_series):
     result = ma.n_smoothed_ema(price=input_series, period=5, n=2).round(2)
     assert (result.dropna() == ma.ema(ma.ema(price=input_series, period=5), period=5).round(2).dropna()).all()
