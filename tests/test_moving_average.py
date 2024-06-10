@@ -23,11 +23,11 @@ def test_sma(input_series, sma_result):
 def ema_result() -> pd.Series:
     return pd.Series(
         [
-            0.67,  # weighted avg between (0, 1)
-            1.56,
-            2.52,
-            3.51,
-            4.5,
+            0.67,  # weighted avg between (0, 1) will be about 2/3
+            1.56,  # (2/3)*2 + (1/3)*0.67
+            2.52,  # (2/3)*3 + (1/3)*1.56
+            3.51,  # (2/3)*4 + (1/3)*2.52
+            4.5,  # (2/3)*5 + (1/3)*3.51
             5.5,
             6.5,
             7.5,
