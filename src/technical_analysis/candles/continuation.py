@@ -22,12 +22,12 @@ def rising_n(
     """
     Rising 'n' Method
     ------------
-
+    https://www.investopedia.com/terms/r/rising-three-methods.asp
 
     Candles:
     ------------
         1. a long green body and closes at a new high (determined by close > all closes 'lookback' periods ago)
-        2. 'n' candles, each inside high-low range of (1)
+        2. 'n' candles, each inside high-low range of (1) and bearish
         3. n+1 candle long green body
     """
     bullish_trend = is_bullish_trend(close, lookback=lookback)
@@ -36,7 +36,10 @@ def rising_n(
     shifts = list(range(n, 0, -1))
     lookback_periods = list(range(1, n + 1))
     for shift, period in list(zip(shifts, lookback_periods)):
-        insides.append(body_inside_shadow(open, high, low, close, lookback=period).shift(shift))
+        insides.append(
+            body_inside_shadow(open, high, low, close, lookback=period).shift(shift)
+            & negative_close(open.shift(shift), close.shift(shift))
+            )
     combined_insides = insides.pop(0)
     for series in insides:
         combined_insides = combined_insides & series
