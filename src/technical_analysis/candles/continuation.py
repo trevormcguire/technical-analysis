@@ -65,7 +65,7 @@ def rising_three(
     Candles:
     ------------
         1. a long green body and closes at a new high (determined by close > all closes 'lookback' periods ago)
-        2. 3 candles, each inside high-low range of (3)
+        2. 3 candles, each inside high-low range of (3) and bearish
         3. 4th candle long green body
     """
     return rising_n(open, high, low, close, n=3, lookback=lookback)
@@ -80,14 +80,14 @@ def falling_n(
     lookback: int = 20,
 ) -> pd.Series:
     """
-    Rising 'n' Method
+    Falling 'n' Method
     ------------
-
+    https://www.investopedia.com/terms/f/falling-three-methods.asp
 
     Candles:
     ------------
         1. a long red body and closes at a new low (determined by close < all closes 'lookback' periods ago)
-        2. 'n' candles, each inside high-low range of (3)
+        2. 'n' candles, each inside high-low range of (3) and bullish
         3. n+1 long red body
     """
     bearish_trend = is_bearish_trend(close, lookback=lookback)
@@ -96,7 +96,10 @@ def falling_n(
     shifts = list(range(n, 0, -1))
     lookback_periods = list(range(1, n + 1))
     for shift, period in list(zip(shifts, lookback_periods)):
-        insides.append(body_inside_shadow(open, high, low, close, lookback=period).shift(shift))
+        insides.append(
+            body_inside_shadow(open, high, low, close, lookback=period).shift(shift)
+            & positive_close(open.shift(shift), close.shift(shift))
+            )
     combined_insides = insides.pop(0)
     for series in insides:
         combined_insides = combined_insides & series
@@ -122,7 +125,7 @@ def falling_three(
     Candles:
     ------------
         1. a long red body and closes at a new low (determined by close < all closes 'lookback' periods ago)
-        2. 3 candles, each inside high-low range of (3)
+        2. 3 candles, each inside high-low range of (3) and bullish
         3. 4th long red body
     """
     return falling_n(open, high, low, close, n=3, lookback=lookback)
