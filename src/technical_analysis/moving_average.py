@@ -1,5 +1,3 @@
-from typing import Union
-
 import numpy as np
 import pandas as pd
 
@@ -31,7 +29,7 @@ def ema(price: pd.Series, period: int) -> pd.Series:
     return transformed_series
 
 
-def n_smoothed_ema(price: pd.Series, period: Union[int, tuple], n: int) -> pd.Series:
+def n_smoothed_ema(price: pd.Series, period: int | tuple[int], n: int) -> pd.Series:
     """
     Variably Smoothed EMA
     """

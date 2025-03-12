@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import Callable, Union
-from warnings import warn
+from typing import Callable
 
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 
@@ -93,8 +90,8 @@ class Backtest(object):
 
     def __init__(
         self,
-        entry_criteria: Union[list, tuple],
-        exit_criteria: Union[list, tuple],
+        entry_criteria: list | tuple,
+        exit_criteria: list | tuple,
         max_positions: int = 1,
         use_next_open: bool = True,
         **kwargs,
@@ -159,7 +156,7 @@ class Backtest(object):
         self,
         data: pd.DataFrame,
         exit: bool = False,
-        criteria: Union[list, tuple] = None,
+        criteria: list | tuple = None,
     ) -> pd.Series:
         """
         Recursively applies criteria specified
@@ -241,17 +238,3 @@ class Backtest(object):
         entry = self._apply_criteria(data, exit=False)  # entry
         exit = self._apply_criteria(data, exit=True)
         self.results = self.calculate_results(data, entry, exit)
-
-    def plot(self, figsize: tuple = (10, 6)):
-        if not self.results:
-            warn("Must call 'run' before plotting results.")
-            return
-
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1, 1, 1)
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-        ax.plot(np.cumsum(self.results["returns"]) * 100)
-        plt.title("Backtest Cumulative Return")
-        plt.ylabel("Percent Return")
-        plt.xlabel("Num Trades")
-        plt.show()

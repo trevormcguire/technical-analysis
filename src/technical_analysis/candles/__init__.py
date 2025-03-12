@@ -23,6 +23,7 @@ References:
     3. https://school.stockcharts.com/doku.php?id=chart_analysis:candlestick_pattern_dictionary
 -------------
 """
+
 from technical_analysis.candles.single import *  # noqa
 from technical_analysis.candles.reversal import *  # noqa
 from technical_analysis.candles.continuation import *  # noqa

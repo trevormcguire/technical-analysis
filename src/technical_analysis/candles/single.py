@@ -5,6 +5,7 @@ Single Candlestick Patterns
     "For any given, candle it is best to compare only recent price action (5-10 periods)" (Morris)
 
 """
+
 import numpy as np
 import pandas as pd
 
