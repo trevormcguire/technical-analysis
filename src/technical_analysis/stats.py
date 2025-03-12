@@ -1,10 +1,8 @@
-from typing import Tuple
-
 import numpy as np
 import pandas as pd
 
 
-def linear_regression(x: np.ndarray, y: np.ndarray = None) -> Tuple[float]:
+def linear_regression(x: np.ndarray, y: np.ndarray = None) -> tuple[float]:
     if y is None:
         return np.polyfit(np.arange(len(x)), x, 1)
     return np.polyfit(x, y, 1)

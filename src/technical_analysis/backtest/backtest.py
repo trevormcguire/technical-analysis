@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Union
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -90,8 +90,8 @@ class Backtest(object):
 
     def __init__(
         self,
-        entry_criteria: Union[list, tuple],
-        exit_criteria: Union[list, tuple],
+        entry_criteria: list | tuple,
+        exit_criteria: list | tuple,
         max_positions: int = 1,
         use_next_open: bool = True,
         **kwargs,
@@ -156,7 +156,7 @@ class Backtest(object):
         self,
         data: pd.DataFrame,
         exit: bool = False,
-        criteria: Union[list, tuple] = None,
+        criteria: list | tuple = None,
     ) -> pd.Series:
         """
         Recursively applies criteria specified

@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -143,7 +143,7 @@ def stochastic(
     period: int,
     perc_k_smoothing: int = 0,
     perc_d_smoothing: int = 3,
-) -> Tuple[pd.Series]:
+) -> tuple[pd.Series]:
     """
     Stochastic Oscillator
     ----------

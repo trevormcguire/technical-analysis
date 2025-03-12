@@ -1,5 +1,3 @@
-from typing import Tuple, Union
-
 import numpy as np
 import pandas as pd
 
@@ -27,10 +25,10 @@ def rescaled_range(arr: np.ndarray):
 
 def hurst_exp(
     price: pd.Series,
-    window_sizes: Tuple[int] = (50, 200),
+    window_sizes: tuple[int] = (50, 200),
     window_increment: int = 10,
     return_c: bool = False,
-) -> Union[float, Tuple[float]]:
+) -> float | tuple[float]:
     """
     The Hurst Exponent calculates the degree of persistance (think 'long-term memory')
 
