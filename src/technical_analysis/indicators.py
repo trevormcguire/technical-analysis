@@ -329,6 +329,7 @@ def efficiency_ratio(price: pd.Series, period: int) -> pd.Series:
 
     return price.rolling(period).apply(_er)
 
+
 def money_flow_volume(high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.Series) -> pd.Series:
     """
     Money Flow Volume
@@ -337,8 +338,8 @@ def money_flow_volume(high: pd.Series, low: pd.Series, close: pd.Series, volume:
 
     Calculation
     ------
-    ```       
-    1. Money Flow Multiplier = [(Close  -  Low) - (High - Close)] /(High - Low) 
+    ```
+    1. Money Flow Multiplier = [(Close  -  Low) - (High - Close)] /(High - Low)
     2. Money Flow Volume = Money Flow Multiplier x Volume for the Period
     ```
     """
@@ -346,20 +347,22 @@ def money_flow_volume(high: pd.Series, low: pd.Series, close: pd.Series, volume:
     mf_volume = mf_multiplier * volume
     return mf_volume
 
+
 def money_flow(high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.Series, period: int = 20) -> pd.Series:
     """
     Chaikin Money Flow (CMF)
     ------
     Measures the amount of money flowing into an asset over a specific period.
- 
+
     Calculation
     ------
-    ```       
-    N-period CMF = N-period Sum of Money Flow Volume / N-period Sum of Volume 
+    ```
+    N-period CMF = N-period Sum of Money Flow Volume / N-period Sum of Volume
     ```
     """
     mf_volume = money_flow_volume(high=high, low=low, close=close, volume=volume)
     return mf_volume.rolling(period).sum() / volume.rolling(period).sum()
+
 
 def adl(high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.Series) -> pd.Series:
     """
@@ -369,6 +372,7 @@ def adl(high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.Series) ->
     """
     return np.cumsum(money_flow_volume(high=high, low=low, close=close, volume=volume))
 
+
 def on_balance_volume(price: pd.Series, volume: pd.Series) -> pd.Series:
     """
     On Balance Volume (OBV)
@@ -377,15 +381,15 @@ def on_balance_volume(price: pd.Series, volume: pd.Series) -> pd.Series:
 
     Calculation
     ------
-    - If the closing price is above the prior close price then: 
+    - If the closing price is above the prior close price then:
         `Current OBV = Previous OBV + Current Volume`
 
-    - If the closing price is below the prior close price then: 
+    - If the closing price is below the prior close price then:
         `Current OBV = Previous OBV  -  Current Volume`
 
     - If the closing prices equals the prior close price then:
         `Current OBV = Previous OBV (no change)`
-    
+
     Reference: https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/on-balance-volume-obv
     """
     return np.cumsum(np.sign(price.diff()) * volume)

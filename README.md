@@ -149,3 +149,17 @@ array([ 1,  2,  5,  4,  3,  7, 16, 10, 25, 38])
 >>> hurst_exp(df.close)
 0.3238867311092554
 ```
+
+# Development
+
+If you'd like to contribute please feel free to raise an issue or open a PR.
+
+## Tests
+```
+pytest tests
+```
+
+## Linting
+```
+python -m black src/technical_analysis -l 120 --check 
+```
