@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from technical_analysis import df_price_to_series
+from technical_analysis.decorators import df_price_to_series
 
 @df_price_to_series
 def sma(price: pd.Series, period: int) -> pd.Series:

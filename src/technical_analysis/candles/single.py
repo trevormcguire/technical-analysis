@@ -9,7 +9,7 @@ Single Candlestick Patterns
 import numpy as np
 import pandas as pd
 
-from technical_analysis import df_ohlc_to_series
+from technical_analysis.decorators import df_ohlc_to_series
 from technical_analysis.utils import get_body
 
 
