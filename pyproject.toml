@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "technical_analysis"
-version = "0.0.7.3"
+version = "0.0.7"
 description = "Technical Analysis with Python"
 authors = [
     {name = "Trevor McGuire", email = "trevormcguire13@gmail.com"}
