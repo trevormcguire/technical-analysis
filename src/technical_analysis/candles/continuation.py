@@ -1,5 +1,5 @@
 import pandas as pd
-from technical_analysis import df_ohlc_to_series
+from technical_analysis.decorators import df_ohlc_to_series
 
 from technical_analysis.candles.single import (
     body_inside_shadow,

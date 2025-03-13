@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from technical_analysis import df_ohlc_to_series
+from technical_analysis.decorators import df_ohlc_to_series
 from technical_analysis.utils import is_bullish_trend, is_bearish_trend, get_body
 from technical_analysis.candles.single import (
     body_outside_body,

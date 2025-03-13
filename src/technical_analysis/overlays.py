@@ -1,6 +1,6 @@
 import pandas as pd
 
-from technical_analysis import df_price_to_series
+from technical_analysis.decorators import df_price_to_series
 from technical_analysis.indicators import atr
 from technical_analysis.moving_average import ema
 
