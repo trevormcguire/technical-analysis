@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "technical_analysis"
+version = "0.0.7"
+description = "Technical Analysis with Python"
+authors = [
+    {name = "Trevor McGuire", email = "trevormcguire13@gmail.com"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Development Status :: 4 - Beta"
+]
+dependencies = [
+    "numpy",
+    "pandas"
+]
+
+[tool.setuptools]
+packages = {find = {where = ["src"]}}
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203"]
+
+[tool.isort]
+profile = "black"
