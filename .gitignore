@@ -5,6 +5,7 @@ env/
 .venv
 
 .vscode
+.venv
 
 bin/
 build/
