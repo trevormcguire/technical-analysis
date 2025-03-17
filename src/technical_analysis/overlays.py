@@ -1,6 +1,7 @@
 import pandas as pd
 
-from technical_analysis._common import _atr, _bbands, _dbands
+from technical_analysis.decorators import df_price_to_series
+from technical_analysis.indicators import atr
 from technical_analysis.moving_average import ema
 
 
@@ -23,11 +24,19 @@ def pivot_points(high: pd.Series, low: pd.Series, close: pd.Series) -> tuple[pd.
     return r1, r2, s1, s2
 
 
-bbands = _bbands
-dbands = _dbands
+@df_price_to_series
+def bbands(price: pd.Series, period: int = 20) -> tuple[pd.Series]:
+    """
+    Bollinger Bands Calculation
+    """
+    std = price.rolling(period).std()
+    upper_band = price + (std * 2)
+    lower_band = price - (std * 2)
+    return lower_band, upper_band
 
 
-def kbands(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 20) -> tuple[pd.Series]:
+@df_price_to_series
+def dbands(price: pd.Series, period: int = 20) -> tuple[pd.Series]:
     """
     ------------
     Keltner Channels

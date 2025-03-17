@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from technical_analysis.decorators import df_ohlc_to_series
+from technical_analysis.utils import is_bullish_trend, is_bearish_trend, get_body
 from technical_analysis.candles.single import (
     body_outside_body,
     is_doji,
@@ -13,6 +15,7 @@ from technical_analysis.candles.single import (
 from technical_analysis.utils import get_body, is_bearish_trend, is_bullish_trend
 
 
+@df_ohlc_to_series
 def dark_cloud(
     open: pd.Series,
     high: pd.Series,
@@ -41,6 +44,7 @@ def dark_cloud(
     return uptrend & bullish_long_body.shift(1) & new_high_comparator & close_below_midpoint
 
 
+@df_ohlc_to_series
 def bullish_engulfing(
     open: pd.Series,
     high: pd.Series,
@@ -64,6 +68,7 @@ def bullish_engulfing(
     return downtrend & outisde_body & positive_close(open, close)
 
 
+@df_ohlc_to_series
 def bearish_engulfing(
     open: pd.Series,
     high: pd.Series,
@@ -87,6 +92,7 @@ def bearish_engulfing(
     return uptrend & outisde_body & negative_close(open, close)
 
 
+@df_ohlc_to_series
 def n_black_crows(
     open: pd.Series,
     high: pd.Series,
@@ -125,6 +131,7 @@ def n_black_crows(
     return uptrend & are_crows
 
 
+@df_ohlc_to_series
 def n_white_soldiers(
     open: pd.Series,
     high: pd.Series,
@@ -163,6 +170,7 @@ def n_white_soldiers(
     return downtrend & are_crows
 
 
+@df_ohlc_to_series
 def bullish_island(
     open: pd.Series,
     high: pd.Series,
@@ -180,6 +188,7 @@ def bullish_island(
     return downtrend & down_gap.shift(1) & up_gap
 
 
+@df_ohlc_to_series
 def bearish_island(
     open: pd.Series,
     high: pd.Series,
@@ -197,6 +206,7 @@ def bearish_island(
     return uptrend & up_gap.shift(1) & down_gap
 
 
+@df_ohlc_to_series
 def bullish_star(
     open: pd.Series,
     high: pd.Series,
@@ -225,6 +235,7 @@ def bullish_star(
     return downtrend & long_red.shift(2) & valid_star.shift(1) & reverse_candle & is_gap_up(high, low, min_gap_size)
 
 
+@df_ohlc_to_series
 def bearish_star(
     open: pd.Series,
     high: pd.Series,
